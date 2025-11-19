@@ -1,7 +1,3 @@
-<!--
-This is a placeholder dashboard layout.
-Backend functionality to be implemented.
--->
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -20,7 +16,6 @@ Backend functionality to be implemented.
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Header Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,7 +41,6 @@ Backend functionality to be implemented.
                     android:contentDescription="Profile"/>
             </LinearLayout>
 
-            <!-- Expense Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -98,7 +92,6 @@ Backend functionality to be implemented.
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Recent Transactions -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -118,7 +111,6 @@ Backend functionality to be implemented.
                 android:textColor="#999999"
                 android:layout_marginBottom="12dp"/>
 
-            <!-- Transaction List (empty for now — use RecyclerView when ready) -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTransactions"
                 android:layout_width="match_parent"
@@ -127,7 +119,6 @@ Backend functionality to be implemented.
         </LinearLayout>
     </ScrollView>
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
