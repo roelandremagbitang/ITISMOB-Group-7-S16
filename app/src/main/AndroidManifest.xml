@@ -36,6 +36,23 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.S16Group7ITISMOB" />
 
+
+        <!-- added more of these activity classes -->
+        <activity android:name=".AddExpenseActivity" />
+        <activity android:name=".EditTransactionActivity" />
+        <activity android:name=".ExpenseListActivity" />
+
+        <activity android:name=".BudgetBuilderActivity" />
+        <activity android:name=".AddBudgetCategoryActivity" />
+        <activity android:name=".SummaryActivity" />
+
+        <activity android:name=".NotificationsActivity" />
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".ScanActivity" />
+
+        <activity android:name=".ScanResultActivity" />
+
+
     </application>
 
 </manifest>
