@@ -1,3 +1,32 @@
 <resources>
+    <!-- app name (which will change into smart expense tracker name soon -->
     <string name="app_name">S16Group7ITISMOB</string>
+
+
+    <string name="add_expense">Add New Expense</string>
+    <string name="amount">Amount</string>
+    <string name="category">Category</string>
+    <string name="date">Date</string>
+    <string name="notes">Notes</string>
+    <string name="save">Save</string>
+    <string name="scan_qr_photo">Scan QR / Photo</string>
+    <string name="edit_transaction">Edit Transaction</string>
+    <string name="expense_records">Expense Records</string>
+    <string name="search">Search</string>
+    <string name="budget_builder">Budget Builder</string>
+    <string name="add_category">Add Category</string>
+    <string name="add_budget_category">Add Budget Category</string>
+    <string name="summary">Summary</string>
+    <string name="notifications">Notifications</string>
+    <string name="username">Username</string>
+    <string name="edit_account">Edit Account</string>
+    <string name="log_out">Log Out</string>
+    <string name="use_scan">Use Scan</string>
+    <string name="scan_result">Scan Result</string>
+    <string name="ocr_dummy_text">[Recognized text will appear here]</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete">Delete</string>
+    <string name="discard">Discard</string>
+    <string name="recurring_transactions">Recurring Transactions</string>
+    <string name="custom_categories">Custom Categories</string>
 </resources>
