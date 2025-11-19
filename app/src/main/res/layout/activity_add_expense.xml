@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="@color/window_background_dark">
+
+    <TextView
+        android:id="@+id/tvAddExpenseTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/add_expense"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <EditText
+        android:id="@+id/etAmount"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="@string/amount"
+        android:inputType="numberDecimal"
+        android:background="@drawable/button_rounded"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tvAddExpenseTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerCategory"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        app:layout_constraintTop_toBottomOf="@id/etAmount"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/etDate"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="@string/date"
+        android:focusable="false"
+        android:background="@drawable/button_rounded"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/spinnerCategory"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/etNotes"
+        android:layout_width="0dp"
+        android:layout_height="120dp"
+        android:hint="@string/notes"
+        android:gravity="top"
+        android:background="@drawable/button_rounded"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/etDate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <Button
+        android:id="@+id/btnSaveExpense"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:text="@string/save"
+        android:background="@drawable/button_rounded"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/etNotes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- Still undecided on how this may work at the moment
+    <Button
+        android:id="@+id/btnScanReceipt"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:text="@string/scan_qr_photo"
+        android:background="@drawable/button_rounded"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/btnSaveExpense"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+-->
+</androidx.constraintlayout.widget.ConstraintLayout>
