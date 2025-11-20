@@ -5,53 +5,76 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import java.util.concurrent.Executor
 
 class VerificationActivity : AppCompatActivity() {
+
+    private lateinit var executor: Executor
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: BiometricPrompt.PromptInfo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_verification)
 
         val btnVerify = findViewById<Button>(R.id.btnVerify)
-        val userEmail = intent.getStringExtra("USER_EMAIL")
 
-        btnVerify.setOnClickListener {
-            if (userEmail != null) {
-                // Phase 2: Facial Recognition (2FA) Logic
-                // NOTE: The actual Facial Recognition implementation (camera access,
-                // processing, and API call) must be added here.
+        // 1. Initialize the Executor (Runs the callback on the main thread)
+        executor = ContextCompat.getMainExecutor(this)
 
-                val isFacialScanSuccessful = attemptFacialRecognition(userEmail)
+        // 2. Define the Callback (What happens after the scan)
+        biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
 
-                if (isFacialScanSuccessful) {
-                    // Final Login Step Successful! Navigate to Dashboard.
-                    Toast.makeText(this, "Verification successful! Welcome.", Toast.LENGTH_SHORT).show()
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    // SUCCESS: The user is verified!
+                    Toast.makeText(applicationContext, "Identity Verified!", Toast.LENGTH_SHORT).show()
 
-                    // Navigate to the main application screen (Dashboard)
-                    val intent = Intent(this, DashboardActivity::class.java)
-                    startActivity(intent)
-                    finish() // Close the login and verification activities
-                } else {
-                    Toast.makeText(this, "Facial verification failed. Please try again.", Toast.LENGTH_LONG).show()
+                    // Navigate to Dashboard
+                    startActivity(Intent(this@VerificationActivity, DashboardActivity::class.java))
+                    finish()
                 }
-            } else {
-                Toast.makeText(this, "Error: User context lost. Please log in again.", Toast.LENGTH_LONG).show()
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            }
+
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    // Hard failure (e.g., wrong face/fingerprint)
+                    Toast.makeText(applicationContext, "Not recognized. Please try again.", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    // Handle errors (like user pressing "Back" or hardware issues)
+                    // We ignore "User Canceled" to avoid spamming Toasts when they just close the dialog
+                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED &&
+                        errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
+                        Toast.makeText(applicationContext, "Authentication Error: $errString", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
+
+        // 3. Configure the Prompt UI
+        // IMPORTANT: We use BIOMETRIC_WEAK to allow standard Face Unlock
+        promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Facial Verification")
+            .setSubtitle("Confirm your identity to access your finances")
+            // Allow Face (Weak/Strong) OR PIN/Pattern (Device Credential)
+            .setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+            // NOTE: We DO NOT set a Negative Button (Cancel) because DEVICE_CREDENTIAL is enabled.
+            .build()
+
+        // 4. Button Click Listener
+        btnVerify.setOnClickListener {
+            biometricPrompt.authenticate(promptInfo)
         }
-    }
 
-    /**
-     * Placeholder function for Facial Recognition logic.
-     * TODO: Replace this with the actual implementation for accessing the camera
-     * and communicating with your Facial Recognition API/Service.
-     */
-    private fun attemptFacialRecognition(email: String): Boolean {
-        // For demonstration, we assume verification is always successful.
-        // In a real app, this function would handle the complex biometrics logic.
-
-        // This process provides the extra layer of security required by the proposal[cite: 39].
-        return true
+        // Optional: Trigger the scan immediately when the activity opens
+        // biometricPrompt.authenticate(promptInfo)
     }
 }

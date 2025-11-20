@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.ktx.auth
 
 class SplashActivity : AppCompatActivity() {
 
@@ -12,31 +14,20 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Delay the routing for a few seconds to show the splash screen
+        // Delay for 2 seconds to show branding, then check session
         Handler(Looper.getMainLooper()).postDelayed({
-            // TODO: Step 1: Check for an existing session or stored login token here.
-            val isLoggedIn = checkIfUserIsLoggedIn()
-
-            if (isLoggedIn) {
-                // If logged in, go straight to the main app dashboard
+            // Check if a user is already signed in with Firebase
+            val user = Firebase.auth.currentUser
+            if (user != null) {
+                // User is logged in, navigate to Dashboard directly
+                // (Or VerificationActivity if you want to force 2FA on every app launch)
                 startActivity(Intent(this, DashboardActivity::class.java))
             } else {
-                // If not logged in, go to the login screen
+                // No user session, navigate to Login screen
                 startActivity(Intent(this, LoginActivity::class.java))
             }
-
-            // Finish the splash activity so the user cannot press back to it
+            // Close SplashActivity so user can't go back to it
             finish()
-
-        }, 2000) // 2000 milliseconds (2 seconds) delay
-    }
-
-    /**
-     * Placeholder for checking if a user has a valid, stored session.
-     * TODO: Implement logic to check SharedPreferences or secure storage for a token.
-     */
-    private fun checkIfUserIsLoggedIn(): Boolean {
-        // For development, we assume the user must always log in first.
-        return false
+        }, 2000)
     }
 }
