@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "822063425466",
+    "project_id": "smart-expense-tracker-cbce5",
+    "storage_bucket": "smart-expense-tracker-cbce5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:822063425466:android:8819fb7587e93f19349f83",
+        "android_client_info": {
+          "package_name": "com.itismob.s16.magbitang.andre.s16group7itismob"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCBbtc5fLPrqQ7O8qi_BxHljgEPOt65Gk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
