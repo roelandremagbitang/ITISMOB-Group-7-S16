@@ -27,7 +27,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Hello, [User]!"
+                    android:text="Hello, User!"
                     android:textSize="20sp"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"/>
@@ -37,57 +37,39 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_profile"
-                    android:background="@drawable/circle_background"
-                    android:contentDescription="Profile"/>
+                    android:contentDescription="Profile"
+                    app:tint="#FFFFFF"/>
             </LinearLayout>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                app:cardBackgroundColor="#2d2d44"
                 app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#2D2D44"
                 app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="24dp"
-                    android:gravity="center">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total Expenses"
-                        android:textSize="14sp"
-                        android:textColor="#999999"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="This Month"
-                        android:textSize="12sp"
-                        android:textColor="#999999"
-                        android:layout_marginTop="4dp"/>
+                        android:textColor="#AAAAAA"
+                        android:textSize="14sp"/>
 
                     <TextView
                         android:id="@+id/tvTotalExpense"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="₱0.00"
-                        android:textSize="36sp"
                         android:textColor="#FFFFFF"
+                        android:textSize="32sp"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp"/>
-
-                    <TextView
-                        android:id="@+id/tvBudgetStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="No expenses yet."
-                        android:textSize="12sp"
-                        android:textColor="#999999"
                         android:layout_marginTop="8dp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -96,26 +78,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Recent Transactions"
-                android:textSize="18sp"
                 android:textColor="#FFFFFF"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:id="@+id/tvDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="[Month] [Year]"
-                android:textSize="14sp"
-                android:textColor="#999999"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginTop="32dp"/>
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvTransactions"
+                android:id="@+id/rvRecentTransactions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:nestedScrollingEnabled="false"/>
+
+            <Button
+                android:id="@+id/btnViewAll"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="View All Transactions"
+                android:backgroundTint="#6C63FF"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"/>
+
         </LinearLayout>
     </ScrollView>
 
@@ -124,27 +108,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:fabCradleMargin="8dp"
-        app:fabCradleRoundedCornerRadius="16dp"
-        app:backgroundTint="#2d2d44">
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="20dp"
+        app:backgroundTint="#2D2D44">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="3">
+            android:weightSum="2">
 
             <ImageButton
                 android:id="@+id/btnGraphs"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:src="@drawable/ic_graphs"
+                android:src="@drawable/ic_chart"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Graphs"
-                android:clickable="true"
-                android:focusable="true"
-                android:enabled="true"/>
+                app:tint="#FFFFFF"
+                android:contentDescription="Graphs"/>
 
             <Space
                 android:layout_width="0dp"
@@ -158,10 +140,8 @@
                 android:layout_weight="1"
                 android:src="@drawable/ic_budget"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Budget"
-                android:clickable="true"
-                android:focusable="true"
-                android:enabled="true"/>
+                app:tint="#FFFFFF"
+                android:contentDescription="Budget"/>
         </LinearLayout>
     </com.google.android.material.bottomappbar.BottomAppBar>
 
@@ -171,11 +151,8 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add"
         app:layout_anchor="@id/bottomAppBar"
-        app:backgroundTint="#5e60ce"
+        app:backgroundTint="#6C63FF"
         app:tint="#FFFFFF"
-        android:contentDescription="Add Expense"
-        android:clickable="true"
-        android:focusable="true"
-        android:enabled="true"/>
+        android:contentDescription="Add Expense"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
