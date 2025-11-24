@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.itismob.s16.magbitang.andre.s16group7itismob"
+    namespace = "com.itismob.s16.mco3.smartexptracker.s16group7itismob"
     compileSdk = 36
 
     defaultConfig {
@@ -58,6 +58,7 @@ dependencies {
 
     // 🔒 FIREBASE AUTH (Factor 1)
     // We use strings ("") here to avoid the "Unresolved reference" error
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
 

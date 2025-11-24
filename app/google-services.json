@@ -23,6 +23,25 @@
           "other_platform_oauth_client": []
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:822063425466:android:6d9d84ee259bd803349f83",
+        "android_client_info": {
+          "package_name": "com.itismob.s16.mco3.smartexptracker.s16group7itismob"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCBbtc5fLPrqQ7O8qi_BxHljgEPOt65Gk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
     }
   ],
   "configuration_version": "1"
