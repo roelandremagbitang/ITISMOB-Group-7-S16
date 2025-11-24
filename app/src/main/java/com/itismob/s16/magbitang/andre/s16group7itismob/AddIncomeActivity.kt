@@ -101,11 +101,12 @@ class AddIncomeActivity : AppCompatActivity() {
         )
 
         // SAVE TO FIREBASE "income" COLLECTION
-        db.collection("income")
-            .add(incomeData)
-            .addOnSuccessListener {
+        db.collection("income").add(incomeData).addOnSuccessListener { documentReference ->
+                //Update the document to include its own ID immediately
+                documentReference.update("expenseId", documentReference.id)
+
                 Toast.makeText(this, "Income Added Successfully!", Toast.LENGTH_SHORT).show()
-                finish() // Close the activity
+                finish()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()

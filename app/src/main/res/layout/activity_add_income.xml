@@ -30,7 +30,7 @@
         android:inputType="numberDecimal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textColorHint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,12 +40,13 @@
         android:id="@+id/spinnerIncomeSource"
         android:layout_width="0dp"
         android:layout_height="56dp"
+        android:layout_marginTop="16dp"
         android:background="@drawable/button_rounded"
         android:paddingStart="8dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/etIncomeAmount"
+        android:paddingEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/etIncomeAmount" />
 
     <EditText
         android:id="@+id/etIncomeDate"
@@ -58,7 +59,7 @@
         android:hint="Date"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textColorHint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -73,7 +74,7 @@
         android:gravity="top|start"
         android:hint="@string/notes"
         android:padding="16dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textColorHint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.graphics.Color
 
-class ExpenseAdapter(private val expenseList: List<Expense>) :
+class ExpenseAdapter(private val expenseList: List<Expense>, private val onItemClick: (Expense) -> Unit) :
     RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder>() {
 
     class ExpenseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -48,6 +48,11 @@ class ExpenseAdapter(private val expenseList: List<Expense>) :
             holder.tvAmount.text = "- $amountString"
             // Set Red Color (Matches your XML design)
             holder.tvAmount.setTextColor(Color.parseColor("#FF6B6B"))
+        }
+
+        // CHANGED: Set the click listener on the whole row
+        holder.itemView.setOnClickListener {
+            onItemClick(expense)
         }
     }
 

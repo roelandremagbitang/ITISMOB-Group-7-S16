@@ -1,5 +1,6 @@
 package com.itismob.s16.mco3.smartexptracker.s16group7itismob
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -32,7 +33,20 @@ class TransactionListActivity : AppCompatActivity() {
         // 1. Setup RecyclerView
         val rv = findViewById<RecyclerView>(R.id.rvAllExpenses)
         rv.layoutManager = LinearLayoutManager(this)
-        adapter = ExpenseAdapter(displayedList)
+        adapter = ExpenseAdapter(displayedList) { selectedExpense ->
+            val intent = Intent(this, EditTransactionActivity::class.java)
+
+            // Pass all data to the next screen
+            intent.putExtra("EXPENSE_ID", selectedExpense.expenseId)
+            intent.putExtra("AMOUNT", selectedExpense.amount)
+            intent.putExtra("CATEGORY", selectedExpense.category)
+            intent.putExtra("NOTES", selectedExpense.notes)
+            intent.putExtra("DATE", selectedExpense.date)
+            intent.putExtra("TYPE", selectedExpense.type) // Crucial for knowing which DB collection to edit
+
+            startActivity(intent)
+        }
+
         rv.adapter = adapter
 
         // 2. Setup Tabs (All, Income, Expense)
@@ -74,33 +88,27 @@ class TransactionListActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return
 
         // Step A: Fetch Expenses
-        db.collection("expenses")
-            .whereEqualTo("userId", userId)
-            .get()
-            .addOnSuccessListener { expenseDocs ->
-                masterList.clear() // Clear previous load
+        db.collection("expenses").whereEqualTo("userId", userId).get().addOnSuccessListener { expenseDocs ->
+            masterList.clear()
 
-                for (doc in expenseDocs) {
+            for (doc in expenseDocs) {
+                val item = doc.toObject(Expense::class.java)
+                item.expenseId = doc.id // <--- FIX ADDED
+
+                val fixedItem = item.copy(type = "expense")
+                masterList.add(fixedItem)
+            }
+
+            // Step B: Fetch Income
+            db.collection("income").whereEqualTo("userId", userId).get().addOnSuccessListener { incomeDocs ->
+                for (doc in incomeDocs) {
+                    val source = doc.getString("source") ?: "Income"
                     val item = doc.toObject(Expense::class.java)
-                    // Explicitly set type to "expense"
-                    val fixedItem = item.copy(type = "expense")
+                    item.expenseId = doc.id // <--- FIX ADDED
+
+                    val fixedItem = item.copy(type = "income", category = source)
                     masterList.add(fixedItem)
                 }
-
-                // Step B: Fetch Income (Nested to ensure we have both before showing)
-                db.collection("income")
-                    .whereEqualTo("userId", userId)
-                    .get()
-                    .addOnSuccessListener { incomeDocs ->
-                        for (doc in incomeDocs) {
-                            // Map "source" field to "category" for the UI
-                            val source = doc.getString("source") ?: "Income"
-                            val item = doc.toObject(Expense::class.java)
-
-                            // Explicitly set type to "income"
-                            val fixedItem = item.copy(type = "income", category = source)
-                            masterList.add(fixedItem)
-                        }
 
                         // Step C: Sort by Date (Newest first)
                         masterList.sortByDescending { it.date }
@@ -108,8 +116,7 @@ class TransactionListActivity : AppCompatActivity() {
                         // Step D: Show initial data
                         filterData()
                     }
-            }
-            .addOnFailureListener {
+            }.addOnFailureListener {
                 Toast.makeText(this, "Error loading data", Toast.LENGTH_SHORT).show()
             }
     }

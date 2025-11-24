@@ -42,7 +42,19 @@ class DashboardActivity : AppCompatActivity() {
 
         // Setup RecyclerView
         rvRecentTransactions.layoutManager = LinearLayoutManager(this)
-        adapter = ExpenseAdapter(expenseList)
+        adapter = ExpenseAdapter(expenseList) { selectedExpense ->
+            val intent = Intent(this, EditTransactionActivity::class.java)
+
+            // Pass data to Edit Activity so fields are pre-filled
+            intent.putExtra("EXPENSE_ID", selectedExpense.expenseId)
+            intent.putExtra("AMOUNT", selectedExpense.amount)
+            intent.putExtra("CATEGORY", selectedExpense.category)
+            intent.putExtra("NOTES", selectedExpense.notes)
+            intent.putExtra("DATE", selectedExpense.date)
+            intent.putExtra("TYPE", selectedExpense.type)
+
+            startActivity(intent)
+        }
         rvRecentTransactions.adapter = adapter
 
         // Load User Name
@@ -60,9 +72,7 @@ class DashboardActivity : AppCompatActivity() {
         // Navigation
         btnGraphs.setOnClickListener { startActivity(Intent(this, SummaryActivity::class.java)) }
         btnBudget.setOnClickListener { startActivity(Intent(this, BudgetBuilderActivity::class.java)) }
-        fabAdd.setOnClickListener {
-            showAddOptionsDialog()
-        }
+        fabAdd.setOnClickListener { showAddOptionsDialog() }
         ivProfile.setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
         btnViewAll.setOnClickListener { startActivity(Intent(this, TransactionListActivity::class.java)) }
     }
@@ -80,29 +90,26 @@ class DashboardActivity : AppCompatActivity() {
         var totalExpense = 0.0
 
         // 1. FETCH EXPENSES
-        db.collection("expenses")
-            .whereEqualTo("userId", userId)
-            .get()
-            .addOnSuccessListener { expenseDocs ->
+        db.collection("expenses").whereEqualTo("userId", userId).get().addOnSuccessListener { expenseDocs ->
                 for (doc in expenseDocs) {
                     val item = doc.toObject(Expense::class.java)
-                    // Ensure type is set (in case old data didn't have it)
+                    // FIX: Force the ID from the document metadata
+                    item.expenseId = doc.id
+
                     val fixedItem = item.copy(type = "expense")
                     tempTransactionList.add(fixedItem)
                     totalExpense += fixedItem.amount
                 }
 
-                // 2. FETCH INCOME (Nested inside success of Expenses to ensure sequential loading)
-                db.collection("income")
-                    .whereEqualTo("userId", userId)
-                    .get()
-                    .addOnSuccessListener { incomeDocs ->
+                // B. Fetch INCOME
+                db.collection("income").whereEqualTo("userId", userId).get().addOnSuccessListener { incomeDocs ->
                         for (doc in incomeDocs) {
-                            // We manually map "source" to "category" for the adapter
                             val source = doc.getString("source") ?: "Income"
                             val item = doc.toObject(Expense::class.java)
 
-                            // Force type to income and apply source as category
+                            // FIX: Force the ID from the document metadata
+                            item.expenseId = doc.id
+
                             val fixedItem = item.copy(type = "income", category = source)
                             tempTransactionList.add(fixedItem)
                             totalIncome += fixedItem.amount
@@ -123,8 +130,7 @@ class DashboardActivity : AppCompatActivity() {
                         val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
                         tvTotalExpense.text = format.format(balance)
                     }
-            }
-            .addOnFailureListener {
+            }.addOnFailureListener {
                 tvTotalExpense.text = "Error"
             }
     }
