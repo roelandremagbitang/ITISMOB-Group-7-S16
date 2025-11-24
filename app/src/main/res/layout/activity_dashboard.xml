@@ -94,11 +94,11 @@
                 android:id="@+id/btnViewAll"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="View All Transactions"
-                android:backgroundTint="#6C63FF"
-                android:textColor="#FFFFFF"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="24dp"/>
+                android:layout_marginBottom="24dp"
+                android:backgroundTint="#6C63FF"
+                android:text="View All Transactions"
+                android:textColor="#FFFFFF" />
 
         </LinearLayout>
     </ScrollView>

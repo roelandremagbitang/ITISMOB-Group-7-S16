@@ -40,8 +40,9 @@
 
         <!-- added more of these activity classes -->
         <activity android:name=".AddExpenseActivity" />
+        <activity android:name=".AddIncomeActivity" />
         <activity android:name=".EditTransactionActivity" />
-        <activity android:name=".ExpenseListActivity" />
+        <activity android:name=".TransactionListActivity" />
 
         <activity android:name=".BudgetBuilderActivity" />
         <activity android:name=".AddBudgetCategoryActivity" />

@@ -11,7 +11,6 @@ class UserDatabaseHelper(context: Context) :
     companion object {
         private const val DATABASE_NAME = "users.db"
         private const val DATABASE_VERSION = 1
-
         private const val TABLE_USERS = "users"
         private const val COL_ID = "id"
         private const val COL_NAME = "fullname"

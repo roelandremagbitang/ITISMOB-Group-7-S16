@@ -9,9 +9,13 @@ data class Expense(
 
     val userId: String = "",
     val amount: Double = 0.0,
-    val category: String = "",
+    // Income uses "source", Expense uses "category". We map both to this field.
+    @get:PropertyName("category") @set:PropertyName("category")
+    var category: String = "",
     val notes: String = "",
 
     // We store the date as a simple Long (milliseconds) for easy sorting
-    val date: Long = System.currentTimeMillis()
+    val date: Long = System.currentTimeMillis(),
+
+    val type: String = "expense"
 )

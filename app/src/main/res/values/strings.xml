@@ -3,7 +3,8 @@
     <string name="app_name">S16Group7ITISMOB</string>
 
 
-    <string name="add_expense">Add New Expense</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="add_income">Add Income</string>
     <string name="amount">Amount</string>
     <string name="category">Category</string>
     <string name="date">Date</string>

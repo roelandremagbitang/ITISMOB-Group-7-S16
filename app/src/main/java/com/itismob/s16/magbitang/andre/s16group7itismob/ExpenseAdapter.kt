@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import android.graphics.Color
 
 class ExpenseAdapter(private val expenseList: List<Expense>) :
     RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder>() {
@@ -36,7 +37,18 @@ class ExpenseAdapter(private val expenseList: List<Expense>) :
 
         // Format Amount (Philippines Peso)
         val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
-        holder.tvAmount.text = format.format(expense.amount)
+        val amountString = format.format(expense.amount)
+
+        // LOGIC TO CHANGE COLOR based on type
+        if (expense.type == "income") {
+            holder.tvAmount.text = "+ $amountString"
+            // Set Green Color (Hollow/Green or standard Android green)
+            holder.tvAmount.setTextColor(Color.parseColor("#4CAF50"))
+        } else {
+            holder.tvAmount.text = "- $amountString"
+            // Set Red Color (Matches your XML design)
+            holder.tvAmount.setTextColor(Color.parseColor("#FF6B6B"))
+        }
     }
 
     override fun getItemCount() = expenseList.size

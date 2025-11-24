@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.text.NumberFormat
@@ -61,49 +60,93 @@ class DashboardActivity : AppCompatActivity() {
         // Navigation
         btnGraphs.setOnClickListener { startActivity(Intent(this, SummaryActivity::class.java)) }
         btnBudget.setOnClickListener { startActivity(Intent(this, BudgetBuilderActivity::class.java)) }
-        fabAdd.setOnClickListener { startActivity(Intent(this, AddExpenseActivity::class.java)) }
+        fabAdd.setOnClickListener {
+            showAddOptionsDialog()
+        }
         ivProfile.setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
-        btnViewAll.setOnClickListener { startActivity(Intent(this, ExpenseListActivity::class.java)) }
+        btnViewAll.setOnClickListener { startActivity(Intent(this, TransactionListActivity::class.java)) }
     }
 
     override fun onResume() {
         super.onResume()
         loadDashboardData()
     }
-
     private fun loadDashboardData() {
         val userId = auth.currentUser?.uid ?: return
 
-        // 1. Calculate Total & Fetch Recent 3 Items
+        // Temporary list to hold merged data
+        val tempTransactionList = mutableListOf<Expense>()
+        var totalIncome = 0.0
+        var totalExpense = 0.0
+
+        // 1. FETCH EXPENSES
         db.collection("expenses")
             .whereEqualTo("userId", userId)
-            .orderBy("date", Query.Direction.DESCENDING)
             .get()
-            .addOnSuccessListener { documents ->
-                var total = 0.0
-                expenseList.clear()
-
-                for ((index, doc) in documents.withIndex()) {
-                    // Calculate Total
-                    val amount = doc.getDouble("amount") ?: 0.0
-                    total += amount
-
-                    // Add only the first 3 items to the list
-                    if (index < 3) {
-                        val expense = doc.toObject(Expense::class.java)
-                        expenseList.add(expense)
-                    }
+            .addOnSuccessListener { expenseDocs ->
+                for (doc in expenseDocs) {
+                    val item = doc.toObject(Expense::class.java)
+                    // Ensure type is set (in case old data didn't have it)
+                    val fixedItem = item.copy(type = "expense")
+                    tempTransactionList.add(fixedItem)
+                    totalExpense += fixedItem.amount
                 }
 
-                // Update Total UI
-                val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
-                tvTotalExpense.text = format.format(total)
+                // 2. FETCH INCOME (Nested inside success of Expenses to ensure sequential loading)
+                db.collection("income")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .addOnSuccessListener { incomeDocs ->
+                        for (doc in incomeDocs) {
+                            // We manually map "source" to "category" for the adapter
+                            val source = doc.getString("source") ?: "Income"
+                            val item = doc.toObject(Expense::class.java)
 
-                // Update List UI
-                adapter.notifyDataSetChanged()
+                            // Force type to income and apply source as category
+                            val fixedItem = item.copy(type = "income", category = source)
+                            tempTransactionList.add(fixedItem)
+                            totalIncome += fixedItem.amount
+                        }
+
+                        // 3. SORT & DISPLAY
+                        // Sort by date descending (newest first)
+                        tempTransactionList.sortByDescending { it.date }
+
+                        // Update the Main List used by the Adapter
+                        expenseList.clear()
+                        // Take only top 5 for the dashboard
+                        expenseList.addAll(tempTransactionList.take(5))
+                        adapter.notifyDataSetChanged()
+
+                        // Update Total Balance UI (Income - Expense)
+                        val balance = totalIncome - totalExpense
+                        val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
+                        tvTotalExpense.text = format.format(balance)
+                    }
             }
             .addOnFailureListener {
-                tvTotalExpense.text = "₱0.00"
+                tvTotalExpense.text = "Error"
             }
+    }
+
+    // Function to show the small prompt
+    private fun showAddOptionsDialog() {
+        val options = arrayOf("Add Expense", "Add Income")
+
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("What do you want to add?")
+        builder.setItems(options) { dialog, which ->
+            when (which) {
+                0 -> {
+                    // User clicked "Add Expense"
+                    startActivity(Intent(this, AddExpenseActivity::class.java))
+                }
+                1 -> {
+                    // User clicked "Add Income"
+                    startActivity(Intent(this, AddIncomeActivity::class.java))
+                }
+            }
+        }
+        builder.show()
     }
 }
