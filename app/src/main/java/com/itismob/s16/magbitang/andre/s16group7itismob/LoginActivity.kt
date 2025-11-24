@@ -1,4 +1,4 @@
-package com.itismob.s16.magbitang.andre.s16group7itismob
+package com.itismob.s16.mco3.smartexptracker.s16group7itismob
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,14 +16,12 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Initialize Firebase Auth
         auth = Firebase.auth
 
-        // Bind Views (IDs from your activity_login.xml)
         val editEmail = findViewById<EditText>(R.id.inputEmail)
         val editPassword = findViewById<EditText>(R.id.inputPassword)
         val btnLogin = findViewById<Button>(R.id.btnLogin)
-        val linkRegister = findViewById<TextView>(R.id.linkRegister)
+        val registerText = findViewById<TextView>(R.id.linkRegister)
 
         btnLogin.setOnClickListener {
             val email = editEmail.text.toString().trim()
@@ -34,24 +32,21 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 1. Verify Password with Firebase (Factor 1)
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        // 2. Password Correct -> Proceed to Facial Recognition (2FA)
                         Toast.makeText(this, "Password Verified. Starting 2FA...", Toast.LENGTH_SHORT).show()
-
                         val intent = Intent(this, VerificationActivity::class.java)
-                        intent.putExtra("USER_EMAIL", email) // Pass email if needed for context
+                        intent.putExtra("USER_EMAIL", email)
                         startActivity(intent)
                         finish()
                     } else {
-                        Toast.makeText(this, "Authentication Failed: Invalid email or password.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Login Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
         }
 
-        linkRegister.setOnClickListener {
+        registerText.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
