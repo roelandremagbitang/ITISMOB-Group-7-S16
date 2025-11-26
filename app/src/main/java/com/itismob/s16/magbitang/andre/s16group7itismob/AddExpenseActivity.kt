@@ -24,7 +24,7 @@ class AddExpenseActivity : AppCompatActivity() {
 
     // Data
     private var selectedDateTimestamp: Long = System.currentTimeMillis()
-    private val categoryList = mutableListOf("Food", "Transport", "Utilities", "Entertainment", "Other")
+    private val categoryList = mutableListOf("Food", "Transport", "Utilities", "Entertainment", "Others")
     private lateinit var categoryAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
