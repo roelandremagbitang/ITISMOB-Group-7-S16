@@ -107,7 +107,7 @@ class DashboardActivity : AppCompatActivity() {
                             val source = doc.getString("source") ?: "Income"
                             val item = doc.toObject(Expense::class.java)
 
-                            // FIX: Force the ID from the document metadata
+                            // Force the ID from the document metadata
                             item.expenseId = doc.id
 
                             val fixedItem = item.copy(type = "income", category = source)
@@ -131,6 +131,7 @@ class DashboardActivity : AppCompatActivity() {
                         tvTotalExpense.text = format.format(balance)
                     }
             }.addOnFailureListener {
+                tvTotalExpense.text = "Error"
                 tvTotalExpense.text = "Error"
             }
     }

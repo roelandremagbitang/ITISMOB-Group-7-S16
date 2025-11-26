@@ -34,7 +34,7 @@ class SummaryActivity : AppCompatActivity() {
     private val masterList = mutableListOf<Expense>()
 
     // Summary Data for Adapter
-    data class CategorySummary(val name: String, val amount: Double, val type: String)
+    data class CategorySummary(val name: String, val amount: Double, val type: String, val color: Int)
     private val summaryList = mutableListOf<CategorySummary>()
     private lateinit var categoryAdapter: CategorySummaryAdapter
 
@@ -117,11 +117,10 @@ class SummaryActivity : AppCompatActivity() {
     private fun setupChart() {
         pieChart.description.isEnabled = false
         pieChart.legend.isEnabled = false
-        pieChart.setEntryLabelColor(Color.WHITE)
-        pieChart.setEntryLabelTextSize(10f)
+        pieChart.setDrawEntryLabels(false)
         pieChart.setHoleColor(Color.TRANSPARENT)
-        pieChart.holeRadius = 40f
-        pieChart.transparentCircleRadius = 45f
+        pieChart.holeRadius = 35f
+        pieChart.transparentCircleRadius = 35f
         pieChart.setCenterTextColor(Color.WHITE)
         pieChart.animateY(800)
     }
@@ -209,12 +208,11 @@ class SummaryActivity : AppCompatActivity() {
             }
         }
 
-        // --- 3. UPDATE TOTALS ---
+        // --- 3. UPDATE TOTALS UI ---
         val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
         tvTotalIncome.text = "Inc: ${format.format(totalInc)}"
         tvTotalExpense.text = "Exp: ${format.format(totalExp)}"
 
-        // Highlight the active total
         if(isExpenseView) {
             tvTotalExpense.alpha = 1.0f
             tvTotalIncome.alpha = 0.5f
@@ -223,19 +221,55 @@ class SummaryActivity : AppCompatActivity() {
             tvTotalIncome.alpha = 1.0f
         }
 
-        // --- 4. UPDATE GRAPH (Active Map Only) ---
-        updatePieChart(activeMap)
+        // --- 4. SYNCHRONIZE COLORS & UPDATE GRAPH/LIST ---
 
-        // --- 5. UPDATE LIST (Active Map Only) ---
+        // A. Convert map to list and SORT IT first (Highest amount first)
+        val sortedList = activeMap.toList().sortedByDescending { (_, value) -> value }
+
+        // B. Get our color pool
+        val colorPool = getColors()
+
+        // C. Prepare lists for Chart and Adapter
+        val pieEntries = ArrayList<PieEntry>()
+        val pieColors = ArrayList<Int>()
         summaryList.clear()
+
         val typeTag = if(isExpenseView) "expense" else "income"
 
-        for ((name, amount) in activeMap) {
-            summaryList.add(CategorySummary(name, amount, typeTag))
+        // D. Loop through sorted items and assign colors
+        sortedList.forEachIndexed { index, (category, amount) ->
+            // Pick color (use modulo % to loop if we have more categories than colors)
+            val color = colorPool[index % colorPool.size]
+
+            // 1. Add to Chart Data
+            pieEntries.add(PieEntry(amount.toFloat(), category))
+            pieColors.add(color)
+
+            // 2. Add to RecyclerView List (With the SAME color)
+            summaryList.add(CategorySummary(category, amount, typeTag, color))
         }
 
-        summaryList.sortByDescending { it.amount }
+        // E. Update Adapter
         categoryAdapter.notifyDataSetChanged()
+
+        // F. Update Chart
+        if (pieEntries.isEmpty()) {
+            pieChart.clear()
+            pieChart.centerText = "No Data"
+            pieChart.invalidate()
+        } else {
+            pieChart.centerText = ""
+
+            val dataSet = PieDataSet(pieEntries, "")
+            dataSet.colors = pieColors // Assign the synced colors
+
+            // HIDE VALUES (The numbers on the slices)
+            dataSet.setDrawValues(false)
+
+            val data = PieData(dataSet)
+            pieChart.data = data
+            pieChart.invalidate()
+        }
     }
 
     private fun setStartOfDay(cal: Calendar) {
@@ -269,7 +303,7 @@ class SummaryActivity : AppCompatActivity() {
         val dataSet = PieDataSet(entries, "")
         val colors = ArrayList<Int>()
 
-        // FIX: Combine multiple templates to ensure enough unique colors
+        // Combine multiple templates to ensure enough unique colors
         if (isExpenseView) {
             // For Expenses: Mix Material, Joyful, and Colorful
             for (c in ColorTemplate.MATERIAL_COLORS) colors.add(c)
@@ -277,7 +311,7 @@ class SummaryActivity : AppCompatActivity() {
             for (c in ColorTemplate.COLORFUL_COLORS) colors.add(c)
             for (c in ColorTemplate.LIBERTY_COLORS) colors.add(c)
         } else {
-            // For Income: Mix Pastel and Vordiplom (lighter/softer themes)
+            // For Income: Mix Pastel and Vordiplom
             for (c in ColorTemplate.PASTEL_COLORS) colors.add(c)
             for (c in ColorTemplate.VORDIPLOM_COLORS) colors.add(c)
             // Reuse others if really needed to prevent looping
@@ -316,15 +350,33 @@ class SummaryActivity : AppCompatActivity() {
             val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
             holder.tvTotal.text = format.format(item.amount)
 
+            // Sets the specific color from the Chart to the indicator bar
+            holder.indicator.setBackgroundColor(item.color)
+
+            // Keeps the text color logical
+            //    OR you can set it to Black/White. Let's stick to the red/green text for clarity.
             if (item.type == "income") {
-                holder.indicator.setBackgroundColor("#4CAF50".toColorInt())
-                holder.tvTotal.setTextColor("#4CAF50".toColorInt())
+                holder.tvTotal.setTextColor(Color.parseColor("#4CAF50"))
             } else {
-                holder.indicator.setBackgroundColor("#FF6B6B".toColorInt())
-                holder.tvTotal.setTextColor("#FF6B6B".toColorInt())
+                holder.tvTotal.setTextColor(Color.parseColor("#FF6B6B"))
             }
         }
-
         override fun getItemCount() = list.size
+    }
+
+    private fun getColors(): List<Int> {
+        val colors = ArrayList<Int>()
+        // Use different palettes based on view to keep them distinct
+        if (isExpenseView) {
+            for (c in ColorTemplate.MATERIAL_COLORS) colors.add(c)
+            for (c in ColorTemplate.JOYFUL_COLORS) colors.add(c)
+            for (c in ColorTemplate.COLORFUL_COLORS) colors.add(c)
+            for (c in ColorTemplate.LIBERTY_COLORS) colors.add(c)
+        } else {
+            for (c in ColorTemplate.PASTEL_COLORS) colors.add(c)
+            for (c in ColorTemplate.VORDIPLOM_COLORS) colors.add(c)
+            for (c in ColorTemplate.JOYFUL_COLORS) colors.add(c)
+        }
+        return colors
     }
 }
