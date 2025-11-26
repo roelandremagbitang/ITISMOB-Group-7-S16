@@ -68,6 +68,9 @@ dependencies {
     // 🛠️ FIXED: Changed from 'libs.firebase...' to direct string to fix the error
     implementation("com.google.firebase:firebase-common-ktx:20.4.2")
 
+    // For the graph
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

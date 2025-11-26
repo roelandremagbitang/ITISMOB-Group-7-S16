@@ -30,4 +30,5 @@
     <string name="discard">Discard</string>
     <string name="recurring_transactions">Recurring Transactions</string>
     <string name="custom_categories">Custom Categories</string>
+    <string-array name="period_options"><item>Weekly</item><item>Monthly</item><item>Yearly</item></string-array>
 </resources>
