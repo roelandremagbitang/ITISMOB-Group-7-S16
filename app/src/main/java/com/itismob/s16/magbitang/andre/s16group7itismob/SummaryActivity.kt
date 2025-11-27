@@ -26,11 +26,9 @@ import androidx.core.graphics.toColorInt
 
 class SummaryActivity : AppCompatActivity() {
 
-    // Firebase
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Data
     private val masterList = mutableListOf<Expense>()
 
     // Summary Data for Adapter
@@ -38,7 +36,6 @@ class SummaryActivity : AppCompatActivity() {
     private val summaryList = mutableListOf<CategorySummary>()
     private lateinit var categoryAdapter: CategorySummaryAdapter
 
-    // UI
     private lateinit var pieChart: PieChart
     private lateinit var tvDateRange: TextView
     private lateinit var tvTotalIncome: TextView
@@ -55,7 +52,6 @@ class SummaryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_summary)
 
-        // 1. Initialize Views
         pieChart = findViewById(R.id.pieChart)
         tvDateRange = findViewById(R.id.tvCurrentDateRange)
         tvTotalIncome = findViewById(R.id.tvTotalIncome)
@@ -67,7 +63,7 @@ class SummaryActivity : AppCompatActivity() {
         val btnNext = findViewById<ImageButton>(R.id.btnNextPeriod)
         val rv = findViewById<RecyclerView>(R.id.rvCategorySummary)
 
-        // 2. Setup Tabs (Expense / Income)
+        // Setup Tabs (Expense / Income)
         tabType.addTab(tabType.newTab().setText("Expenses"))
         tabType.addTab(tabType.newTab().setText("Income"))
 
@@ -81,7 +77,7 @@ class SummaryActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
 
-        // 3. Setup Spinner (Weekly/Monthly/Yearly)
+        // Setup Spinner (Weekly/Monthly/Yearly)
         val options = listOf("Weekly", "Monthly", "Yearly")
         spinnerPeriod.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, options)
         spinnerPeriod.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -92,12 +88,10 @@ class SummaryActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // 4. Setup RecyclerView
         rv.layoutManager = LinearLayoutManager(this)
         categoryAdapter = CategorySummaryAdapter(summaryList)
         rv.adapter = categoryAdapter
 
-        // 5. Setup Buttons
         btnPrev.setOnClickListener { changeDate(-1) }
         btnNext.setOnClickListener { changeDate(1) }
 
@@ -147,7 +141,6 @@ class SummaryActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        // --- 1. SET DATE LABELS (Same as before) ---
         val startCal = selectedDate.clone() as Calendar
         val endCal = selectedDate.clone() as Calendar
         val sdfWeek = SimpleDateFormat("MMM dd", Locale.US)
@@ -180,7 +173,6 @@ class SummaryActivity : AppCompatActivity() {
             }
         }
 
-        // --- 2. FILTER DATA ---
         val startTime = startCal.timeInMillis
         val endTime = endCal.timeInMillis
 
@@ -192,11 +184,11 @@ class SummaryActivity : AppCompatActivity() {
 
         for (item in masterList) {
             if (item.date in startTime..endTime) {
-                // Calculate global totals for the top headers
+                // Calculates global totals for the top headers
                 if (item.type == "income") totalInc += item.amount
                 else totalExp += item.amount
 
-                // Filter logic for Graph & List
+                // Filters logic for Graph & List
                 if (isExpenseView && item.type == "expense") {
                     val current = activeMap[item.category] ?: 0.0
                     activeMap[item.category] = current + item.amount
@@ -208,7 +200,6 @@ class SummaryActivity : AppCompatActivity() {
             }
         }
 
-        // --- 3. UPDATE TOTALS UI ---
         val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
         tvTotalIncome.text = "Inc: ${format.format(totalInc)}"
         tvTotalExpense.text = "Exp: ${format.format(totalExp)}"
@@ -221,38 +212,31 @@ class SummaryActivity : AppCompatActivity() {
             tvTotalIncome.alpha = 1.0f
         }
 
-        // --- 4. SYNCHRONIZE COLORS & UPDATE GRAPH/LIST ---
-
-        // A. Convert map to list and SORT IT first (Highest amount first)
+        // Convert map to list and sorts first (Highest amount first)
         val sortedList = activeMap.toList().sortedByDescending { (_, value) -> value }
-
-        // B. Get our color pool
         val colorPool = getColors()
 
-        // C. Prepare lists for Chart and Adapter
+        // Prepares lists for Chart and Adapter
         val pieEntries = ArrayList<PieEntry>()
         val pieColors = ArrayList<Int>()
         summaryList.clear()
 
         val typeTag = if(isExpenseView) "expense" else "income"
 
-        // D. Loop through sorted items and assign colors
+        // Loops through sorted items and assign colors
         sortedList.forEachIndexed { index, (category, amount) ->
-            // Pick color (use modulo % to loop if we have more categories than colors)
             val color = colorPool[index % colorPool.size]
 
-            // 1. Add to Chart Data
+            // Add to Chart Data
             pieEntries.add(PieEntry(amount.toFloat(), category))
             pieColors.add(color)
 
-            // 2. Add to RecyclerView List (With the SAME color)
             summaryList.add(CategorySummary(category, amount, typeTag, color))
         }
 
-        // E. Update Adapter
         categoryAdapter.notifyDataSetChanged()
 
-        // F. Update Chart
+        // Updates Chart
         if (pieEntries.isEmpty()) {
             pieChart.clear()
             pieChart.centerText = "No Data"
@@ -263,7 +247,6 @@ class SummaryActivity : AppCompatActivity() {
             val dataSet = PieDataSet(pieEntries, "")
             dataSet.colors = pieColors // Assign the synced colors
 
-            // HIDE VALUES (The numbers on the slices)
             dataSet.setDrawValues(false)
 
             val data = PieData(dataSet)
@@ -314,7 +297,6 @@ class SummaryActivity : AppCompatActivity() {
             // For Income: Mix Pastel and Vordiplom
             for (c in ColorTemplate.PASTEL_COLORS) colors.add(c)
             for (c in ColorTemplate.VORDIPLOM_COLORS) colors.add(c)
-            // Reuse others if really needed to prevent looping
             for (c in ColorTemplate.JOYFUL_COLORS) colors.add(c)
         }
 
@@ -327,7 +309,6 @@ class SummaryActivity : AppCompatActivity() {
         pieChart.invalidate()
     }
 
-    // --- REUSE PREVIOUS ADAPTER ---
     inner class CategorySummaryAdapter(private val list: List<CategorySummary>) :
         RecyclerView.Adapter<CategorySummaryAdapter.ViewHolder>() {
 
@@ -338,8 +319,7 @@ class SummaryActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_category_summary, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_category_summary, parent, false)
             return ViewHolder(view)
         }
 
@@ -354,11 +334,10 @@ class SummaryActivity : AppCompatActivity() {
             holder.indicator.setBackgroundColor(item.color)
 
             // Keeps the text color logical
-            //    OR you can set it to Black/White. Let's stick to the red/green text for clarity.
             if (item.type == "income") {
-                holder.tvTotal.setTextColor(Color.parseColor("#4CAF50"))
+                holder.tvTotal.setTextColor("#4CAF50".toColorInt())
             } else {
-                holder.tvTotal.setTextColor(Color.parseColor("#FF6B6B"))
+                holder.tvTotal.setTextColor("#FF6B6B".toColorInt())
             }
         }
         override fun getItemCount() = list.size
@@ -366,7 +345,6 @@ class SummaryActivity : AppCompatActivity() {
 
     private fun getColors(): List<Int> {
         val colors = ArrayList<Int>()
-        // Use different palettes based on view to keep them distinct
         if (isExpenseView) {
             for (c in ColorTemplate.MATERIAL_COLORS) colors.add(c)
             for (c in ColorTemplate.JOYFUL_COLORS) colors.add(c)

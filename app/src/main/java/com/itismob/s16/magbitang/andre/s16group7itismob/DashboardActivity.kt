@@ -29,23 +29,20 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // Initialize Views
         val tvGreeting = findViewById<TextView>(R.id.tvGreeting)
         tvTotalExpense = findViewById(R.id.tvTotalExpense)
         rvRecentTransactions = findViewById(R.id.rvRecentTransactions)
 
         val btnGraphs = findViewById<ImageButton>(R.id.btnGraphs)
-        val btnBudget = findViewById<ImageButton>(R.id.btnBudget)
+        val btnBudget = findViewById<ImageButton>(R.id.btnTool)
         val btnViewAll = findViewById<Button>(R.id.btnViewAll)
         val fabAdd = findViewById<FloatingActionButton>(R.id.fabAddExpense)
         val ivProfile = findViewById<ImageView>(R.id.ivProfile)
 
-        // Setup RecyclerView
         rvRecentTransactions.layoutManager = LinearLayoutManager(this)
         adapter = ExpenseAdapter(expenseList) { selectedExpense ->
             val intent = Intent(this, EditTransactionActivity::class.java)
 
-            // Pass data to Edit Activity so fields are pre-filled
             intent.putExtra("EXPENSE_ID", selectedExpense.expenseId)
             intent.putExtra("AMOUNT", selectedExpense.amount)
             intent.putExtra("CATEGORY", selectedExpense.category)
@@ -69,9 +66,8 @@ class DashboardActivity : AppCompatActivity() {
                 }
         }
 
-        // Navigation
         btnGraphs.setOnClickListener { startActivity(Intent(this, SummaryActivity::class.java)) }
-        btnBudget.setOnClickListener { startActivity(Intent(this, BudgetBuilderActivity::class.java)) }
+        btnBudget.setOnClickListener { startActivity(Intent(this, ToolActivity::class.java)) }
         fabAdd.setOnClickListener { showAddOptionsDialog() }
         ivProfile.setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
         btnViewAll.setOnClickListener { startActivity(Intent(this, TransactionListActivity::class.java)) }
@@ -89,54 +85,50 @@ class DashboardActivity : AppCompatActivity() {
         var totalIncome = 0.0
         var totalExpense = 0.0
 
-        // 1. FETCH EXPENSES
+        // Fetch Expenses
         db.collection("expenses").whereEqualTo("userId", userId).get().addOnSuccessListener { expenseDocs ->
-                for (doc in expenseDocs) {
+            for (doc in expenseDocs) {
+                val item = doc.toObject(Expense::class.java)
+                item.expenseId = doc.id
+
+                val fixedItem = item.copy(type = "expense")
+                tempTransactionList.add(fixedItem)
+                totalExpense += fixedItem.amount
+            }
+
+            // Fetch Income
+            db.collection("income").whereEqualTo("userId", userId).get().addOnSuccessListener { incomeDocs ->
+                for (doc in incomeDocs) {
+                    val source = doc.getString("source") ?: "Income"
                     val item = doc.toObject(Expense::class.java)
-                    // FIX: Force the ID from the document metadata
+
                     item.expenseId = doc.id
 
-                    val fixedItem = item.copy(type = "expense")
+                    val fixedItem = item.copy(type = "income", category = source)
                     tempTransactionList.add(fixedItem)
-                    totalExpense += fixedItem.amount
+                    totalIncome += fixedItem.amount
                 }
 
-                // B. Fetch INCOME
-                db.collection("income").whereEqualTo("userId", userId).get().addOnSuccessListener { incomeDocs ->
-                        for (doc in incomeDocs) {
-                            val source = doc.getString("source") ?: "Income"
-                            val item = doc.toObject(Expense::class.java)
+                // Sort by date descending (newest first)
+                tempTransactionList.sortByDescending { it.date }
 
-                            // Force the ID from the document metadata
-                            item.expenseId = doc.id
+                // Update the Main List used by the Adapter
+                expenseList.clear()
+                expenseList.addAll(tempTransactionList.take(5))
+                adapter.notifyDataSetChanged()
 
-                            val fixedItem = item.copy(type = "income", category = source)
-                            tempTransactionList.add(fixedItem)
-                            totalIncome += fixedItem.amount
-                        }
-
-                        // 3. SORT & DISPLAY
-                        // Sort by date descending (newest first)
-                        tempTransactionList.sortByDescending { it.date }
-
-                        // Update the Main List used by the Adapter
-                        expenseList.clear()
-                        // Take only top 5 for the dashboard
-                        expenseList.addAll(tempTransactionList.take(5))
-                        adapter.notifyDataSetChanged()
-
-                        // Update Total Balance UI (Income - Expense)
-                        val balance = totalIncome - totalExpense
-                        val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
-                        tvTotalExpense.text = format.format(balance)
-                    }
-            }.addOnFailureListener {
-                tvTotalExpense.text = "Error"
-                tvTotalExpense.text = "Error"
+                // Update Total Balance UI (Income - Expense)
+                val balance = totalIncome - totalExpense
+                val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
+                tvTotalExpense.text = format.format(balance)
             }
+        }.addOnFailureListener {
+            tvTotalExpense.text = "Error"
+            tvTotalExpense.text = "Error"
+        }
     }
 
-    // Function to show the small prompt
+    // Function for the small prompt
     private fun showAddOptionsDialog() {
         val options = arrayOf("Add Expense", "Add Income")
 

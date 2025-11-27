@@ -8,7 +8,6 @@ import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,11 +21,9 @@ import java.util.Locale
 
 class TransactionListActivity : AppCompatActivity() {
 
-    // Firebase
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Data Lists
     private val masterList = mutableListOf<Expense>() // Holds EVERYTHING
     private val displayedList = mutableListOf<Expense>() // Holds filtered data for RecyclerView
     private lateinit var adapter: ExpenseAdapter
@@ -47,7 +44,6 @@ class TransactionListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction_list)
 
-        // 1. Setup RecyclerView
         val rv = findViewById<RecyclerView>(R.id.rvAllExpenses)
         rv.layoutManager = LinearLayoutManager(this)
         adapter = ExpenseAdapter(displayedList) { selectedExpense ->
@@ -65,7 +61,7 @@ class TransactionListActivity : AppCompatActivity() {
         }
         rv.adapter = adapter
 
-        // 2. Initialize Date Controls
+        // Initializes Date Controls
         spinnerFilter = findViewById(R.id.spinnerTimeFilter)
         tvDateRange = findViewById(R.id.tvDateRange)
         btnPrev = findViewById(R.id.btnPrevDate)
@@ -74,7 +70,7 @@ class TransactionListActivity : AppCompatActivity() {
         setupDateSpinner()
         setupDateNavigation()
 
-        // 3. Setup Tabs (Matches Tab logic)
+        // Setup Tabs
         val tabLayout = findViewById<TabLayout>(R.id.tabCategories)
         tabLayout.addTab(tabLayout.newTab().setText("All"))
         tabLayout.addTab(tabLayout.newTab().setText("Income"))
@@ -89,7 +85,7 @@ class TransactionListActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
 
-        // 4. Setup Search
+        // Setup Search
         val searchView = findViewById<SearchView>(R.id.searchExpenses)
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -105,7 +101,6 @@ class TransactionListActivity : AppCompatActivity() {
             }
         })
 
-        // 5. Load Data
         loadAllTransactions()
     }
 
@@ -129,7 +124,6 @@ class TransactionListActivity : AppCompatActivity() {
                 }
                 masterList.sortByDescending { it.date }
 
-                // Initial update
                 updateDateLabel()
                 filterData()
             }
@@ -139,18 +133,17 @@ class TransactionListActivity : AppCompatActivity() {
     private fun filterData() {
         displayedList.clear()
 
-        // 1. Calculate Start and End timestamps based on selection
+        // Calculate Start and End timestamps based on selection
         val (startTime, endTime) = getStartAndEndTimes()
 
         for (item in masterList) {
-            // A. Date Check
             val matchesDate = if (filterMode == "All Time") {
                 true
             } else {
                 item.date >= startTime && item.date <= endTime
             }
 
-            // B. Tab Check (Income vs Expense)
+            // Tab Check (Income vs Expense)
             val matchesTab = when (currentTabPosition) {
                 0 -> true
                 1 -> item.type == "income"
@@ -158,7 +151,7 @@ class TransactionListActivity : AppCompatActivity() {
                 else -> true
             }
 
-            // C. Search Check
+            // Search Check
             val matchesSearch = if (currentSearchQuery.isEmpty()) {
                 true
             } else {
@@ -171,31 +164,6 @@ class TransactionListActivity : AppCompatActivity() {
             }
         }
         adapter.notifyDataSetChanged()
-    }
-
-    private fun getStartTimeForFilter(filter: String): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-
-        return when (filter) {
-            "Today" -> calendar.timeInMillis
-            "This Week" -> {
-                calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
-                calendar.timeInMillis
-            }
-            "This Month" -> {
-                calendar.set(Calendar.DAY_OF_MONTH, 1)
-                calendar.timeInMillis
-            }
-            "This Year" -> {
-                calendar.set(Calendar.DAY_OF_YEAR, 1)
-                calendar.timeInMillis
-            }
-            else -> 0L
-        }
     }
 
     private fun setupDateSpinner() {

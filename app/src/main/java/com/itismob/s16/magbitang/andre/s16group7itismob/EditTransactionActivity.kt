@@ -10,7 +10,6 @@ class EditTransactionActivity : AppCompatActivity() {
 
     private val db = FirebaseFirestore.getInstance()
 
-    // UI Elements
     private lateinit var etAmount: EditText
     private lateinit var spinnerCategory: Spinner
     private lateinit var etNotes: EditText
@@ -18,7 +17,6 @@ class EditTransactionActivity : AppCompatActivity() {
     private lateinit var btnDelete: Button
     private lateinit var btnDiscard: Button
 
-    // Data variables
     private var expenseId: String = ""
     private var transactionType: String = "expense" // Default
     private var currentCategory: String = ""
@@ -27,7 +25,6 @@ class EditTransactionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_transaction)
 
-        // 1. Initialize Views
         etAmount = findViewById(R.id.etEditAmount)
         spinnerCategory = findViewById(R.id.spinnerEditCategory)
         etNotes = findViewById(R.id.etEditNotes)
@@ -35,28 +32,21 @@ class EditTransactionActivity : AppCompatActivity() {
         btnDelete = findViewById(R.id.btnDelete)
         btnDiscard = findViewById(R.id.btnDiscard)
 
-        // 2. Get Data from Intent
+        // This gets Data from Intent
         expenseId = intent.getStringExtra("EXPENSE_ID") ?: ""
         val amount = intent.getDoubleExtra("AMOUNT", 0.0)
         currentCategory = intent.getStringExtra("CATEGORY") ?: ""
         val notes = intent.getStringExtra("NOTES") ?: ""
         transactionType = intent.getStringExtra("TYPE") ?: "expense"
 
-        // 3. Populate UI
+        // This populates the UI
         etAmount.setText(amount.toString())
         etNotes.setText(notes)
         setupSpinner()
 
-        // 4. Button Listeners
         btnDiscard.setOnClickListener { finish() }
-
-        btnDelete.setOnClickListener {
-            showDeleteConfirmation()
-        }
-
-        btnSave.setOnClickListener {
-            updateTransaction()
-        }
+        btnDelete.setOnClickListener { showDeleteConfirmation() }
+        btnSave.setOnClickListener { updateTransaction() }
     }
 
     private fun setupSpinner() {
@@ -66,7 +56,7 @@ class EditTransactionActivity : AppCompatActivity() {
         } else {
             listOf("Food", "Transport", "Utilities", "Entertainment", "Other", currentCategory)
         }
-        // Use a Set to remove duplicates
+        // A Set to remove duplicates
         val uniqueList = list.toSet().toList()
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, uniqueList)
@@ -84,7 +74,6 @@ class EditTransactionActivity : AppCompatActivity() {
 
         if (newAmount == null || expenseId.isEmpty()) return
 
-        // Determine collection based on type
         val collectionName = if (transactionType == "income") "income" else "expenses"
 
         // For Income, the field is "source", for Expense it is "category"
@@ -97,23 +86,21 @@ class EditTransactionActivity : AppCompatActivity() {
         )
 
         db.collection(collectionName).document(expenseId).update(updates).addOnSuccessListener {
-                Toast.makeText(this, "Updated!", Toast.LENGTH_SHORT).show()
-                finish()
-            }.addOnFailureListener {
-                Toast.makeText(this, "Update failed: ${it.message}", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(this, "Updated!", Toast.LENGTH_SHORT).show()
+            finish()
+        }.addOnFailureListener {
+            Toast.makeText(this, "Update failed: ${it.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showDeleteConfirmation() {
         AlertDialog.Builder(this).setTitle("Delete Transaction").setMessage("Are you sure you want to delete this?").setPositiveButton("Yes") { _, _ ->
-                val collectionName = if (transactionType == "income") "income" else "expenses"
+            val collectionName = if (transactionType == "income") "income" else "expenses"
 
-                db.collection(collectionName).document(expenseId)
-                    .delete()
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
-            }.setNegativeButton("No", null).show()
+            db.collection(collectionName).document(expenseId).delete().addOnSuccessListener {
+                Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }.setNegativeButton("No", null).show()
     }
 }

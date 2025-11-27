@@ -15,7 +15,6 @@ class AddExpenseActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // UI Elements
     private lateinit var etAmount: EditText
     private lateinit var spinnerCategory: Spinner
     private lateinit var etDate: EditText
@@ -31,21 +30,19 @@ class AddExpenseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_expense)
 
-        // 1. Initialize Views
         etAmount = findViewById(R.id.etAmount)
         spinnerCategory = findViewById(R.id.spinnerCategory)
         etDate = findViewById(R.id.etDate)
         etNotes = findViewById(R.id.etNotes)
         btnSave = findViewById(R.id.btnSaveExpense)
 
-        // 2. Setup Spinner immediately (Prevents crash)
+        // Setup Spinner
         categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categoryList)
         spinnerCategory.adapter = categoryAdapter
 
-        // Attempt to load custom categories from Firebase
         loadCategoriesFromFirebase()
 
-        // 3. Setup Date Picker
+        // Setup Date Picker
         val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
         etDate.setText(sdf.format(Date())) // Set today as default
 
@@ -64,7 +61,6 @@ class AddExpenseActivity : AppCompatActivity() {
             ).show()
         }
 
-        // 4. Handle Save Button
         btnSave.setOnClickListener {
             saveExpense()
         }
@@ -73,20 +69,18 @@ class AddExpenseActivity : AppCompatActivity() {
     private fun loadCategoriesFromFirebase() {
         val userId = auth.currentUser?.uid ?: return
 
-        db.collection("users").document(userId).collection("categories")
-            .get()
-            .addOnSuccessListener { result ->
-                if (!result.isEmpty) {
-                    val customCategories = result.mapNotNull { it.getString("name") }
-                    if (customCategories.isNotEmpty()) {
-                        categoryList.clear()
-                        categoryList.addAll(customCategories)
-                        // Ensure we always have a fallback if user deleted all categories
-                        if (categoryList.isEmpty()) categoryList.add("Uncategorized")
-                        categoryAdapter.notifyDataSetChanged()
-                    }
+        db.collection("users").document(userId).collection("categories").get().addOnSuccessListener { result ->
+            if (!result.isEmpty) {
+                val customCategories = result.mapNotNull { it.getString("name") }
+                if (customCategories.isNotEmpty()) {
+                    categoryList.clear()
+                    categoryList.addAll(customCategories)
+                    // Ensure we always have a fallback if user deleted all categories
+                    if (categoryList.isEmpty()) categoryList.add("Uncategorized")
+                    categoryAdapter.notifyDataSetChanged()
                 }
             }
+        }
     }
 
     private fun saveExpense() {
@@ -99,7 +93,6 @@ class AddExpenseActivity : AppCompatActivity() {
         // Safe check for spinner selection
         val category = spinnerCategory.selectedItem?.toString() ?: "Uncategorized"
 
-        // Validation
         if (amountStr.isEmpty()) {
             etAmount.error = "Amount is required"
             return
@@ -117,27 +110,22 @@ class AddExpenseActivity : AppCompatActivity() {
             return
         }
 
-        // Create Expense Object
         val expenseData = hashMapOf(
             "userId" to userId,
             "amount" to amount,
             "category" to category,
             "date" to selectedDateTimestamp,
             "notes" to notes,
-            "expenseId" to "" // Placeholder, we update it after
+            "expenseId" to ""
         )
 
         // Save to Firestore
-        db.collection("expenses")
-            .add(expenseData)
-            .addOnSuccessListener { documentReference ->
-                // Update the document with its own ID
-                documentReference.update("expenseId", documentReference.id)
-                Toast.makeText(this, "Expense Saved Successfully!", Toast.LENGTH_LONG).show()
-                finish() // Close activity
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+        db.collection("expenses").add(expenseData).addOnSuccessListener { documentReference ->
+            documentReference.update("expenseId", documentReference.id)
+            Toast.makeText(this, "Expense Saved Successfully!", Toast.LENGTH_LONG).show()
+            finish()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 }

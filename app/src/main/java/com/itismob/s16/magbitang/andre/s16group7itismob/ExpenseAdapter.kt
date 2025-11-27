@@ -9,6 +9,7 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import android.graphics.Color
+import androidx.core.graphics.toColorInt
 
 class ExpenseAdapter(private val expenseList: List<Expense>, private val onItemClick: (Expense) -> Unit) :
     RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder>() {
@@ -20,9 +21,7 @@ class ExpenseAdapter(private val expenseList: List<Expense>, private val onItemC
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExpenseViewHolder {
-        // UPDATED: Now points to 'activity_item_expense' instead of 'item_expense'
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.activity_item_expense, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_expense, parent, false)
         return ExpenseViewHolder(view)
     }
 
@@ -39,18 +38,15 @@ class ExpenseAdapter(private val expenseList: List<Expense>, private val onItemC
         val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
         val amountString = format.format(expense.amount)
 
-        // LOGIC TO CHANGE COLOR based on type
+        // Changes color based on type
         if (expense.type == "income") {
             holder.tvAmount.text = "+ $amountString"
-            // Set Green Color (Hollow/Green or standard Android green)
-            holder.tvAmount.setTextColor(Color.parseColor("#4CAF50"))
+            holder.tvAmount.setTextColor("#4CAF50".toColorInt())
         } else {
             holder.tvAmount.text = "- $amountString"
-            // Set Red Color (Matches your XML design)
-            holder.tvAmount.setTextColor(Color.parseColor("#FF6B6B"))
+            holder.tvAmount.setTextColor("#FF6B6B".toColorInt())
         }
 
-        // CHANGED: Set the click listener on the whole row
         holder.itemView.setOnClickListener {
             onItemClick(expense)
         }

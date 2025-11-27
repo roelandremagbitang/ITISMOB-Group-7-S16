@@ -44,8 +44,10 @@
         <activity android:name=".EditTransactionActivity" />
         <activity android:name=".TransactionListActivity" />
 
-        <activity android:name=".BudgetBuilderActivity" />
-        <activity android:name=".AddBudgetCategoryActivity" />
+        <activity android:name=".ToolActivity" />
+        <activity android:name=".SavingsChallengeActivity" />
+        <activity android:name=".AddSavingsChallengeActivity" />
+
         <activity android:name=".SummaryActivity" />
 
         <activity android:name=".NotificationsActivity" />
@@ -53,7 +55,6 @@
         <activity android:name=".ScanActivity" />
 
         <activity android:name=".ScanResultActivity" />
-
 
     </application>
 

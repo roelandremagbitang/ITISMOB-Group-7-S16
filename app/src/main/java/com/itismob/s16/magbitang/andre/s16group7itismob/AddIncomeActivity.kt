@@ -10,12 +10,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class AddIncomeActivity : AppCompatActivity() {
-
-    // Firebase
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // UI Elements
     private lateinit var etAmount: EditText
     private lateinit var spinnerSource: Spinner
     private lateinit var etDate: EditText
@@ -32,18 +29,17 @@ class AddIncomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_income)
 
-        // 1. Initialize Views
         etAmount = findViewById(R.id.etIncomeAmount)
         spinnerSource = findViewById(R.id.spinnerIncomeSource)
         etDate = findViewById(R.id.etIncomeDate)
         etNotes = findViewById(R.id.etIncomeNotes)
         btnSave = findViewById(R.id.btnSaveIncome)
 
-        // 2. Setup Spinner
+        // Setup Spinner
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sourceList)
         spinnerSource.adapter = adapter
 
-        // 3. Setup Date Picker (Matches your AddExpense logic)
+        // Setup Date Picker
         val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
         etDate.setText(sdf.format(Date())) // Default to today
 
@@ -62,7 +58,6 @@ class AddIncomeActivity : AppCompatActivity() {
             ).show()
         }
 
-        // 4. Save Button
         btnSave.setOnClickListener {
             saveIncome()
         }

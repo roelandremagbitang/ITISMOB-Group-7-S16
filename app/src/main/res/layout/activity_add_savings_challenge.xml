@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/window_background_dark"
+    android:padding="20dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tvAddTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Savings Goal"
+            style="@style/TitleText"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <EditText
+            android:id="@+id/etChallengeName"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="Goal Name (e.g., Vacation)"
+            android:background="@drawable/button_rounded"
+            android:padding="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="#AAAAAA"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/tvAddTitle"/>
+
+        <EditText
+            android:id="@+id/etTargetAmount"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="Target Amount"
+            android:inputType="numberDecimal"
+            android:background="@drawable/button_rounded"
+            android:padding="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="#AAAAAA"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/etChallengeName"/>
+
+        <TextView
+            android:id="@+id/lblFreq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Saving Frequency"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/etTargetAmount"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <Spinner
+            android:id="@+id/spinnerFrequency"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/button_rounded"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/lblFreq"/>
+
+        <EditText
+            android:id="@+id/etTargetDate"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="Target Date"
+            android:focusable="false"
+            android:clickable="true"
+            android:background="@drawable/button_rounded"
+            android:padding="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="#AAAAAA"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/spinnerFrequency"/>
+
+        <LinearLayout
+            android:id="@+id/llSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_card"
+            android:padding="16dp"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/etTargetDate">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PLAN SUMMARY"
+                android:textColor="#AAAAAA"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvCalculatedSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enter amount and date to see plan."
+                android:textColor="#4CAF50"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSaveChallenge"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Start Challenge"
+            android:background="@drawable/button_rounded"
+            android:textColor="@color/white"
+            android:layout_marginTop="32dp"
+            app:layout_constraintTop_toBottomOf="@id/llSummary"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -14,7 +14,7 @@
     <string name="edit_transaction">Edit Transaction</string>
     <string name="expense_records">Expense Records</string>
     <string name="search">Search</string>
-    <string name="budget_builder">Budget Builder</string>
+    <string name="tool_options">Tool Options</string>
     <string name="add_category">Add Category</string>
     <string name="add_budget_category">Add Budget Category</string>
     <string name="summary">Summary</string>
@@ -31,4 +31,6 @@
     <string name="recurring_transactions">Recurring Transactions</string>
     <string name="custom_categories">Custom Categories</string>
     <string-array name="period_options"><item>Weekly</item><item>Monthly</item><item>Yearly</item></string-array>
+    <string name="savings_challenge">Savings Challenge</string>
+    <string name="budget_tracker">Budget Tracker</string>
 </resources>
