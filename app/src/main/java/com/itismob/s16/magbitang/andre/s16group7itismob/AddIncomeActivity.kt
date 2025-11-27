@@ -18,6 +18,7 @@ class AddIncomeActivity : AppCompatActivity() {
     private lateinit var etDate: EditText
     private lateinit var etNotes: EditText
     private lateinit var btnSave: Button
+    private lateinit var btnCancel: Button
 
     // Data
     private var selectedDateTimestamp: Long = System.currentTimeMillis()
@@ -34,6 +35,7 @@ class AddIncomeActivity : AppCompatActivity() {
         etDate = findViewById(R.id.etIncomeDate)
         etNotes = findViewById(R.id.etIncomeNotes)
         btnSave = findViewById(R.id.btnSaveIncome)
+        btnCancel = findViewById(R.id.btnCancelIncome)
 
         // Setup Spinner
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sourceList)
@@ -58,9 +60,8 @@ class AddIncomeActivity : AppCompatActivity() {
             ).show()
         }
 
-        btnSave.setOnClickListener {
-            saveIncome()
-        }
+        btnSave.setOnClickListener { saveIncome() }
+        btnCancel.setOnClickListener { finish() }
     }
 
     private fun saveIncome() {

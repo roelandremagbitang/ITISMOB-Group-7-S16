@@ -62,6 +62,7 @@ class SummaryActivity : AppCompatActivity() {
         val btnPrev = findViewById<ImageButton>(R.id.btnPrevPeriod)
         val btnNext = findViewById<ImageButton>(R.id.btnNextPeriod)
         val rv = findViewById<RecyclerView>(R.id.rvCategorySummary)
+        val btnBack = findViewById<android.widget.ImageButton>(R.id.btnBack)
 
         // Setup Tabs (Expense / Income)
         tabType.addTab(tabType.newTab().setText("Expenses"))
@@ -94,6 +95,7 @@ class SummaryActivity : AppCompatActivity() {
 
         btnPrev.setOnClickListener { changeDate(-1) }
         btnNext.setOnClickListener { changeDate(1) }
+        btnBack.setOnClickListener { finish() }
 
         setupChart()
         loadData()

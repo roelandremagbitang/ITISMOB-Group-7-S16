@@ -25,6 +25,7 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
     private lateinit var etDate: EditText
     private lateinit var tvSummary: TextView
     private lateinit var btnSave: Button
+    private lateinit var btnCancel: Button
 
     private var selectedDateTimestamp: Long = 0L
     private var calculatedAmountPerFreq: Double = 0.0
@@ -39,6 +40,7 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         etDate = findViewById(R.id.etTargetDate)
         tvSummary = findViewById(R.id.tvCalculatedSummary)
         btnSave = findViewById(R.id.btnSaveChallenge)
+        btnCancel = findViewById(R.id.btnCancelSavings)
 
         // Setup Spinner
         val freqs = listOf("Daily", "Weekly", "Monthly")
@@ -49,13 +51,24 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
         etDate.setOnClickListener {
             val calendar = Calendar.getInstance()
-            DatePickerDialog(this, { _, year, month, day ->
-                calendar.set(year, month, day)
-                calendar.set(Calendar.HOUR_OF_DAY, 23)
-                selectedDateTimestamp = calendar.timeInMillis
-                etDate.setText(sdf.format(calendar.time))
-                calculateProjection()
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+
+            val datePickerDialog = DatePickerDialog(
+                this,
+                { _, year, month, day ->
+                    calendar.set(year, month, day)
+                    calendar.set(Calendar.HOUR_OF_DAY, 23)
+                    selectedDateTimestamp = calendar.timeInMillis
+                    etDate.setText(sdf.format(calendar.time))
+                    calculateProjection()
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+
+            // Set the minimum date to today (current time)
+            datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
+            datePickerDialog.show()
         }
 
         // Add Listeners for real-time calculation
@@ -71,6 +84,7 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         }
 
         btnSave.setOnClickListener { saveChallenge() }
+        btnCancel.setOnClickListener { finish() }
     }
 
     private fun calculateProjection() {

@@ -20,6 +20,7 @@ class AddExpenseActivity : AppCompatActivity() {
     private lateinit var etDate: EditText
     private lateinit var etNotes: EditText
     private lateinit var btnSave: Button
+    private lateinit var btnCancel: Button
 
     // Data
     private var selectedDateTimestamp: Long = System.currentTimeMillis()
@@ -35,6 +36,7 @@ class AddExpenseActivity : AppCompatActivity() {
         etDate = findViewById(R.id.etDate)
         etNotes = findViewById(R.id.etNotes)
         btnSave = findViewById(R.id.btnSaveExpense)
+        btnCancel = findViewById(R.id.btnCancelExpense)
 
         // Setup Spinner
         categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categoryList)
@@ -61,9 +63,8 @@ class AddExpenseActivity : AppCompatActivity() {
             ).show()
         }
 
-        btnSave.setOnClickListener {
-            saveExpense()
-        }
+        btnSave.setOnClickListener { saveExpense() }
+        btnCancel.setOnClickListener { finish() }
     }
 
     private fun loadCategoriesFromFirebase() {

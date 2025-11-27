@@ -85,11 +85,31 @@
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginTop="32dp"
+        android:layout_weight="1"
+        android:background="@drawable/button_rounded"
+        android:backgroundTint="#6C63FF"
         android:text="Save Income"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etIncomeNotes" />
+
+    <Button
+        android:id="@+id/btnCancelIncome"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="32dp"
+        android:layout_weight="1"
+        android:background="@drawable/button_rounded"
+        android:backgroundTint="#B71C1C"
+        android:text="Cancel"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSaveIncome" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

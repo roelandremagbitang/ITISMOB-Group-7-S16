@@ -44,6 +44,7 @@ class TransactionListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction_list)
 
+        val btnBack = findViewById<android.widget.ImageButton>(R.id.btnBack)
         val rv = findViewById<RecyclerView>(R.id.rvAllExpenses)
         rv.layoutManager = LinearLayoutManager(this)
         adapter = ExpenseAdapter(displayedList) { selectedExpense ->
@@ -102,6 +103,8 @@ class TransactionListActivity : AppCompatActivity() {
         })
 
         loadAllTransactions()
+
+        btnBack.setOnClickListener { finish() }
     }
 
     private fun loadAllTransactions() {

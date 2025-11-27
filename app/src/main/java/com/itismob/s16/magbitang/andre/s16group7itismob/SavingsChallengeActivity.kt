@@ -23,6 +23,7 @@ class SavingsChallengeActivity : AppCompatActivity() {
 
         val rv = findViewById<RecyclerView>(R.id.rvSavings)
         val fab = findViewById<FloatingActionButton>(R.id.fabAddChallenge)
+        val btnBack = findViewById<android.widget.ImageButton>(R.id.btnBack)
 
         rv.layoutManager = LinearLayoutManager(this)
         adapter = SavingsAdapter(list)
@@ -31,6 +32,7 @@ class SavingsChallengeActivity : AppCompatActivity() {
         fab.setOnClickListener {
             startActivity(Intent(this, AddSavingsChallengeActivity::class.java))
         }
+        btnBack.setOnClickListener { finish() }
     }
 
     override fun onResume() {

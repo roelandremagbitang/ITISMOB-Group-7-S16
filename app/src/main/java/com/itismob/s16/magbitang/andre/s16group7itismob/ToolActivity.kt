@@ -10,9 +10,11 @@ class ToolActivity : AppCompatActivity() {
         setContentView(R.layout.activity_tool)
 
         val btnSavings = findViewById<android.widget.Button>(R.id.btnSavingsTool)
+        val btnBack = findViewById<android.widget.ImageButton>(R.id.btnBack)
 
         btnSavings.setOnClickListener {
             startActivity(android.content.Intent(this, SavingsChallengeActivity::class.java))
         }
+        btnBack.setOnClickListener { finish() }
     }
 }

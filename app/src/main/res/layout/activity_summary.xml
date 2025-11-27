@@ -7,14 +7,27 @@
     android:background="@color/window_background_dark"
     android:padding="16dp">
 
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Back"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/white" />
+
     <TextView
         android:id="@+id/tvSummaryTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/summary"
         style="@style/TitleText"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="@+id/btnBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btnBack"/>
 
     <LinearLayout
         android:id="@+id/llFilters"
@@ -23,7 +36,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tvSummaryTitle">
+        app:layout_constraintTop_toBottomOf="@id/btnBack">
 
         <Spinner
             android:id="@+id/spinnerPeriodType"
