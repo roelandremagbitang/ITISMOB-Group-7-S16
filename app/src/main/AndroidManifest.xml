@@ -47,6 +47,7 @@
         <activity android:name=".ToolActivity" />
         <activity android:name=".SavingsChallengeActivity" />
         <activity android:name=".AddSavingsChallengeActivity" />
+        <activity android:name=".SavingsChallengeDetailActivity" />
 
         <activity android:name=".SummaryActivity" />
 

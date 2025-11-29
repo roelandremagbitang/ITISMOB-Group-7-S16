@@ -26,7 +26,16 @@ class SavingsChallengeActivity : AppCompatActivity() {
         val btnBack = findViewById<android.widget.ImageButton>(R.id.btnBack)
 
         rv.layoutManager = LinearLayoutManager(this)
-        adapter = SavingsAdapter(list)
+        adapter = SavingsAdapter(list) { selectedChallenge ->
+            val intent = Intent(this, SavingsChallengeDetailActivity::class.java)
+            // Pass the ID and other details needed
+            intent.putExtra("SAVINGS_ID", selectedChallenge.savingsId)
+            intent.putExtra("NAME", selectedChallenge.name)
+            intent.putExtra("CURRENT_AMOUNT", selectedChallenge.currentAmount)
+            intent.putExtra("GOAL_AMOUNT", selectedChallenge.goalAmount)
+            intent.putExtra("TARGET_DATE", selectedChallenge.targetDate)
+            startActivity(intent)
+        }
         rv.adapter = adapter
 
         fab.setOnClickListener {
@@ -49,6 +58,8 @@ class SavingsChallengeActivity : AppCompatActivity() {
                 val item = doc.toObject(SavingsChallenge::class.java)
                 list.add(item)
             }
+            list.sortBy { it.targetDate }
+
             adapter.notifyDataSetChanged()
         }.addOnFailureListener {
             Toast.makeText(this, "Failed to load: ${it.message}", Toast.LENGTH_SHORT).show()

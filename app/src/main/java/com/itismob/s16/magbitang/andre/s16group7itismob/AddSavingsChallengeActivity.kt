@@ -19,6 +19,7 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    private lateinit var tvTitle: TextView
     private lateinit var etName: EditText
     private lateinit var etAmount: EditText
     private lateinit var spinnerFreq: Spinner
@@ -30,10 +31,14 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
     private var selectedDateTimestamp: Long = 0L
     private var calculatedAmountPerFreq: Double = 0.0
 
+    private var isEditMode = false
+    private var savingsId: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_savings_challenge)
 
+        tvTitle = findViewById(R.id.tvAddTitle)
         etName = findViewById(R.id.etChallengeName)
         etAmount = findViewById(R.id.etTargetAmount)
         spinnerFreq = findViewById(R.id.spinnerFrequency)
@@ -42,15 +47,28 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         btnSave = findViewById(R.id.btnSaveChallenge)
         btnCancel = findViewById(R.id.btnCancelSavings)
 
-        // Setup Spinner
+        setupSpinner()
+        setupDatePicker()
+        checkForEditIntent() // Check if we are editing or adding
+        setupListeners()
+
+        btnSave.setOnClickListener { saveChallenge() }
+        btnCancel.setOnClickListener { finish() }
+    }
+
+    private fun setupSpinner() {
         val freqs = listOf("Daily", "Weekly", "Monthly")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, freqs)
         spinnerFreq.adapter = adapter
+    }
 
-        // Setup Date Picker
+    private fun setupDatePicker() {
         val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
         etDate.setOnClickListener {
             val calendar = Calendar.getInstance()
+            if (selectedDateTimestamp != 0L) {
+                calendar.timeInMillis = selectedDateTimestamp
+            }
 
             val datePickerDialog = DatePickerDialog(
                 this,
@@ -65,13 +83,46 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
             )
-
-            // Set the minimum date to today (current time)
             datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
             datePickerDialog.show()
         }
+    }
 
-        // Add Listeners for real-time calculation
+    private fun checkForEditIntent() {
+        if (intent.hasExtra("SAVINGS_ID")) {
+            isEditMode = true
+            savingsId = intent.getStringExtra("SAVINGS_ID")
+
+            // Update UI Labels
+            tvTitle.text = "Edit Savings Goal"
+            btnSave.text = "Update Challenge"
+
+            // Populate Fields
+            etName.setText(intent.getStringExtra("NAME"))
+
+            val goalAmount = intent.getDoubleExtra("GOAL_AMOUNT", 0.0)
+            etAmount.setText(goalAmount.toString())
+
+            selectedDateTimestamp = intent.getLongExtra("TARGET_DATE", 0L)
+            if (selectedDateTimestamp != 0L) {
+                val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
+                etDate.setText(sdf.format(Date(selectedDateTimestamp)))
+            }
+
+            // Set Spinner Selection
+            val freq = intent.getStringExtra("FREQUENCY") ?: "Monthly"
+            val adapter = spinnerFreq.adapter as ArrayAdapter<String>
+            val position = adapter.getPosition(freq)
+            if (position >= 0) {
+                spinnerFreq.setSelection(position)
+            }
+
+            // Force calculation update
+            calculateProjection()
+        }
+    }
+
+    private fun setupListeners() {
         etAmount.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) = calculateProjection()
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -82,9 +133,6 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) = calculateProjection()
             override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
-
-        btnSave.setOnClickListener { saveChallenge() }
-        btnCancel.setOnClickListener { finish() }
     }
 
     private fun calculateProjection() {
@@ -93,7 +141,9 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         val freq = spinnerFreq.selectedItem?.toString() ?: "Monthly"
 
         if (amount <= 0 || selectedDateTimestamp <= System.currentTimeMillis()) {
-            tvSummary.text = "Please enter valid amount and future date."
+            if (amountStr.isNotEmpty()) {
+                tvSummary.text = "Please enter valid amount and future date."
+            }
             return
         }
 
@@ -101,17 +151,14 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         val diffInMillis = selectedDateTimestamp - today
         val days = TimeUnit.MILLISECONDS.toDays(diffInMillis).toDouble()
 
-        // Avoid division by zero
         val safeDays = if (days < 1) 1.0 else days
-
         val intervals = when (freq) {
             "Daily" -> safeDays
             "Weekly" -> safeDays / 7.0
-            "Monthly" -> safeDays / 30.44 // Average days in month
+            "Monthly" -> safeDays / 30.44
             else -> 1.0
         }
 
-        // Determine cost
         val safeIntervals = if (intervals < 1.0) 1.0 else intervals
         calculatedAmountPerFreq = amount / safeIntervals
 
@@ -129,24 +176,42 @@ class AddSavingsChallengeActivity : AppCompatActivity() {
         }
 
         val userId = auth.currentUser?.uid ?: return
+        val frequency = spinnerFreq.selectedItem?.toString() ?: "Monthly"
 
-        val challenge = SavingsChallenge(
-            userId = userId,
-            name = name,
-            currentAmount = 0.0,
-            goalAmount = amount,
-            frequency = spinnerFreq.selectedItem?.toString() ?: "Monthly",
-            targetDate = selectedDateTimestamp,
-            amountPerFrequency = calculatedAmountPerFreq
-        )
+        if (isEditMode && savingsId != null) {
+            val updates = mapOf(
+                "name" to name,
+                "goalAmount" to amount,
+                "frequency" to frequency,
+                "targetDate" to selectedDateTimestamp,
+                "amountPerFrequency" to calculatedAmountPerFreq
+            )
 
-        db.collection("savings_challenges").add(challenge).addOnSuccessListener { doc ->
-            doc.update("savingsId", doc.id)
+            db.collection("savings_challenges").document(savingsId!!).update(updates).addOnSuccessListener {
+                Toast.makeText(this, "Challenge Updated!", Toast.LENGTH_SHORT).show()
+                finish()
+            }.addOnFailureListener {
+                Toast.makeText(this, "Update failed: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
 
-            Toast.makeText(this, "Challenge Started!", Toast.LENGTH_SHORT).show()
-            finish()
-        }.addOnFailureListener {
-            Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+        } else {
+            val challenge = SavingsChallenge(
+                userId = userId,
+                name = name,
+                currentAmount = 0.0,
+                goalAmount = amount,
+                frequency = frequency,
+                targetDate = selectedDateTimestamp,
+                amountPerFrequency = calculatedAmountPerFreq
+            )
+
+            db.collection("savings_challenges").add(challenge).addOnSuccessListener { doc ->
+                doc.update("savingsId", doc.id)
+                Toast.makeText(this, "Challenge Started!", Toast.LENGTH_SHORT).show()
+                finish()
+            }.addOnFailureListener {
+                Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

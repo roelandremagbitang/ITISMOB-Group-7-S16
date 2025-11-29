@@ -9,8 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.core.graphics.toColorInt
 
-class SavingsAdapter(private val list: List<SavingsChallenge>) :
+class SavingsAdapter(private val list: List<SavingsChallenge>, private val onItemClick: (SavingsChallenge) -> Unit) :
     RecyclerView.Adapter<SavingsAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -28,31 +29,32 @@ class SavingsAdapter(private val list: List<SavingsChallenge>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = list[position]
-
         holder.tvName.text = item.name
 
-        // Formats Currency (Current / Goal)
         val currency = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
-        // Remove decimals if necessary, or keep default
         currency.maximumFractionDigits = 0
-
         val currentStr = currency.format(item.currentAmount)
         val goalStr = currency.format(item.goalAmount)
-
         holder.tvAmountProgress.text = "$currentStr / $goalStr"
 
-        // Sets Date
         val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
         holder.tvDate.text = "Target: ${sdf.format(Date(item.targetDate))}"
 
-        // Sets Progress Bar
-        val progress = if (item.goalAmount > 0) {
+        val percentage = if (item.goalAmount > 0) {
             ((item.currentAmount / item.goalAmount) * 100).toInt()
         } else {
             0
         }
-        holder.progressBar.progress = progress
-        holder.tvPercent.text = "$progress%"
+
+        holder.progressBar.progress = percentage.coerceIn(0, 100)
+        holder.tvPercent.text = "$percentage%"
+        if (percentage >= 100) {
+            holder.tvPercent.setTextColor("#4CAF50".toColorInt())
+        } else {
+            holder.tvPercent.setTextColor("#6C63FF".toColorInt())
+        }
+
+        holder.itemView.setOnClickListener { onItemClick(item) }
     }
 
     override fun getItemCount() = list.size

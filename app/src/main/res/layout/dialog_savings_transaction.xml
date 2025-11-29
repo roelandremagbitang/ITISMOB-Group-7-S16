@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@color/window_background_dark">
+
+    <EditText
+        android:id="@+id/etTransAmount"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/button_rounded"
+        android:hint="Amount"
+        android:inputType="numberDecimal"
+        android:padding="12dp"
+        android:textColor="@color/white"
+        android:textColorHint="#AAAAAA" />
+
+    <EditText
+        android:id="@+id/etTransDate"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/button_rounded"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="Date"
+        android:padding="12dp"
+        android:textColor="@color/white"
+        android:textColorHint="#AAAAAA" />
+
+    <EditText
+        android:id="@+id/etTransNotes"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/button_rounded"
+        android:gravity="top|start"
+        android:hint="Notes (Optional)"
+        android:padding="12dp"
+        android:textColor="@color/white"
+        android:textColorHint="#AAAAAA" />
+
+</LinearLayout>
