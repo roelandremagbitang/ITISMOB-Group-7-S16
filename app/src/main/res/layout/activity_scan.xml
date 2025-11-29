@@ -2,24 +2,20 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/window_background_dark"
-    android:padding="8dp">
+    android:background="@color/window_background_dark">
 
-    <!-- camera preview placeholder -->
-    <View
+    <androidx.camera.view.PreviewView
         android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/rounded_card"/>
+        android:layout_height="match_parent" />
 
-    <!-- overlay controls -->
     <Button
-        android:id="@+id/btnUseScan"
+        android:id="@+id/btnCapture"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:text="@string/use_scan"
+        android:layout_height="wrap_content"
+        android:text="Capture and Scan"
         android:layout_gravity="bottom|center"
-        android:layout_margin="16dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/button_rounded"
         android:textColor="@color/white"/>
 </FrameLayout>
