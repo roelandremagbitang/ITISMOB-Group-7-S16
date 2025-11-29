@@ -1,4 +1,4 @@
-package com.itismob.s16.magbitang.andre.s16group7itismob
+package com.itismob.s16.mco3.smartexptracker.s16group7itismob
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
