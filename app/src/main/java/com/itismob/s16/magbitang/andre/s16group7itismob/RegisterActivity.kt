@@ -7,6 +7,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -17,9 +18,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
-    private lateinit var editBirthday: EditText // Retained for date display
-
-    // Variable to store the selected birthday (as a String for display)
+    private lateinit var editBirthday: EditText
     private var selectedBirthday: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,110 +29,89 @@ class RegisterActivity : AppCompatActivity() {
         db = Firebase.firestore
 
         val editFullname = findViewById<EditText>(R.id.editFullname)
-        editBirthday = findViewById<EditText>(R.id.editBirthday) // Initialize here
+        editBirthday = findViewById<EditText>(R.id.editBirthday)
         val editEmail = findViewById<EditText>(R.id.editEmail)
         val editPassword = findViewById<EditText>(R.id.editPassword)
         val editConfirm = findViewById<EditText>(R.id.editConfirmPassword)
         val btnRegister = findViewById<Button>(R.id.btnRegister)
-        val tvLoginRedirect = findViewById<TextView>(R.id.tvLoginRedirect)
+        val tvLogin = findViewById<TextView>(R.id.tvLoginRedirect)
 
-        // --- NEW: Date Picker Setup ---
-        // 1. Make the EditText non-editable and set up the click listener
-        editBirthday.isFocusable = false
-        editBirthday.isCursorVisible = false
+        // Date Picker for Birthday
         editBirthday.setOnClickListener {
             showDatePicker()
         }
-        // --- END NEW ---
 
         btnRegister.setOnClickListener {
-            val name = editFullname.text.toString().trim()
-            val birthday = editBirthday.text.toString().trim() // Now retrieves the formatted date
+            val fullname = editFullname.text.toString().trim()
             val email = editEmail.text.toString().trim()
             val password = editPassword.text.toString().trim()
-            val confirm = editConfirm.text.toString().trim()
+            val confirmPassword = editConfirm.text.toString().trim()
+            val birthday = editBirthday.text.toString().trim()
 
-            // Basic Validation
-            if (name.isEmpty() || birthday.isEmpty() || email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+            if (fullname.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || birthday.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (password != confirm) {
+            if (password != confirmPassword) {
                 Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // 1. Create User in Firebase Authentication
+            // Create User in Firebase Auth
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        val userId = auth.currentUser?.uid
+                        val user = auth.currentUser
+                        val userId = user?.uid ?: ""
 
-                        // Data to save to Firestore
-                        val userMap = hashMapOf(
-                            "fullName" to name,
-                            "birthday" to birthday, // Storing the formatted date string (e.g., 20/09/1999)
-                            "email" to email
+                        // --- FIX: Update the Auth Profile Name immediately ---
+                        val profileUpdates = UserProfileChangeRequest.Builder()
+                            .setDisplayName(fullname)
+                            .build()
+
+                        user?.updateProfile(profileUpdates)
+                        // ----------------------------------------------------
+
+                        // Save extra details to Firestore
+                        val userData = hashMapOf(
+                            "userId" to userId,
+                            "fullname" to fullname,
+                            "email" to email,
+                            "birthday" to birthday
                         )
 
-                        // 2. Save Data to Firestore
-                        if (userId != null) {
-                            db.collection("users").document(userId)
-                                .set(userMap)
-                                .addOnSuccessListener {
-                                    Toast.makeText(this, "Registration Successful! Logging in...", Toast.LENGTH_SHORT).show()
-                                    startActivity(Intent(this, LoginActivity::class.java))
-                                    finish()
-                                }
-                                .addOnFailureListener { e ->
-                                    Toast.makeText(this, "Error saving data: ${e.message}", Toast.LENGTH_LONG).show()
-                                }
-                        }
+                        db.collection("users").document(userId).set(userData)
+                            .addOnSuccessListener {
+                                Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show()
+                                startActivity(Intent(this, LoginActivity::class.java))
+                                finish()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(this, "Failed to save data: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
                     } else {
-                        Toast.makeText(this, "Registration Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Registration Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
         }
 
-        tvLoginRedirect.setOnClickListener {
+        tvLogin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
     }
 
-    // --- NEW: Date Picker Function ---
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()
-
-        // Check if a date has already been picked and set the calendar to that date
-        if (selectedBirthday.isNotEmpty()) {
-            try {
-                // Use the same date format as the output to parse the current date
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                calendar.time = dateFormat.parse(selectedBirthday) ?: Date()
-            } catch (e: Exception) {
-                // Ignore parsing errors and default to today
-            }
-        }
-
-        val dateSetListener = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, monthOfYear)
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-
-            // Format the date to display (e.g., 20/09/1999)
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            selectedBirthday = dateFormat.format(calendar.time)
-
-            // Update the EditText field
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+            calendar.set(year, month, day)
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            selectedBirthday = sdf.format(calendar.time)
             editBirthday.setText(selectedBirthday)
         }
-
-        // Create the DatePickerDialog
         DatePickerDialog(
-            this,
-            dateSetListener,
+            this, dateSetListener,
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)

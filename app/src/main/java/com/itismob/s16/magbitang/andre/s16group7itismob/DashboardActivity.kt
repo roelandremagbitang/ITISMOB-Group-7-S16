@@ -2,7 +2,6 @@ package com.itismob.s16.mco3.smartexptracker.s16group7itismob
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -19,7 +18,9 @@ import java.util.Locale
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var tvTotalExpense: TextView
+    private lateinit var tvGreeting: TextView // Global variable to update it later
     private lateinit var rvRecentTransactions: RecyclerView
+
     private val db = Firebase.firestore
     private val auth = Firebase.auth
     private val expenseList = mutableListOf<Expense>()
@@ -29,121 +30,120 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        val tvGreeting = findViewById<TextView>(R.id.tvGreeting)
+        tvGreeting = findViewById(R.id.tvGreeting)
         tvTotalExpense = findViewById(R.id.tvTotalExpense)
         rvRecentTransactions = findViewById(R.id.rvRecentTransactions)
 
         val btnGraphs = findViewById<ImageButton>(R.id.btnGraphs)
-        val btnBudget = findViewById<ImageButton>(R.id.btnTool)
-        val btnViewAll = findViewById<Button>(R.id.btnViewAll)
-        val fabAdd = findViewById<FloatingActionButton>(R.id.fabAddExpense)
+        val btnTool = findViewById<ImageButton>(R.id.btnTool)
         val ivProfile = findViewById<ImageView>(R.id.ivProfile)
+        val fabAdd = findViewById<FloatingActionButton>(R.id.fabAddExpense)
 
         rvRecentTransactions.layoutManager = LinearLayoutManager(this)
         adapter = ExpenseAdapter(expenseList) { selectedExpense ->
             val intent = Intent(this, EditTransactionActivity::class.java)
-
             intent.putExtra("EXPENSE_ID", selectedExpense.expenseId)
             intent.putExtra("AMOUNT", selectedExpense.amount)
             intent.putExtra("CATEGORY", selectedExpense.category)
             intent.putExtra("NOTES", selectedExpense.notes)
-            intent.putExtra("DATE", selectedExpense.date)
             intent.putExtra("TYPE", selectedExpense.type)
-
             startActivity(intent)
         }
         rvRecentTransactions.adapter = adapter
 
-        // Load User Name
-        val userId = auth.currentUser?.uid
-        if (userId != null) {
-            db.collection("users").document(userId).get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val name = document.getString("fullName")
-                        tvGreeting.text = "Hello, ${name ?: "User"}!"
-                    }
-                }
+        btnGraphs.setOnClickListener {
+            startActivity(Intent(this, SummaryActivity::class.java))
         }
 
-        btnGraphs.setOnClickListener { startActivity(Intent(this, SummaryActivity::class.java)) }
-        btnBudget.setOnClickListener { startActivity(Intent(this, ToolActivity::class.java)) }
-        fabAdd.setOnClickListener { showAddOptionsDialog() }
-        ivProfile.setOnClickListener { startActivity(Intent(this, ProfileActivity::class.java)) }
-        btnViewAll.setOnClickListener { startActivity(Intent(this, TransactionListActivity::class.java)) }
+        btnTool.setOnClickListener {
+            startActivity(Intent(this, ToolActivity::class.java))
+        }
+
+        ivProfile.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
+
+        fabAdd.setOnClickListener {
+            showAddOptionsDialog()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         loadDashboardData()
+        loadUserProfile() // <--- NEW: Forces name refresh every time you enter
     }
+
+    private fun loadUserProfile() {
+        val user = auth.currentUser
+        if (user != null) {
+            // 1. Force reload from server to get the latest Display Name
+            user.reload().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val updatedUser = auth.currentUser
+                    val name = updatedUser?.displayName
+
+                    if (!name.isNullOrEmpty()) {
+                        // Success: Found name in Auth
+                        tvGreeting.text = "Hello, $name!"
+                    } else {
+                        // 2. Fallback: Fetch from Firestore "users" collection
+                        db.collection("users").document(updatedUser!!.uid).get()
+                            .addOnSuccessListener { document ->
+                                val fsName = document.getString("fullname")
+                                if (!fsName.isNullOrEmpty()) {
+                                    tvGreeting.text = "Hello, $fsName!"
+                                } else {
+                                    tvGreeting.text = "Hello, User!"
+                                }
+                            }
+                    }
+                }
+            }
+        }
+    }
+
     private fun loadDashboardData() {
         val userId = auth.currentUser?.uid ?: return
 
-        // Temporary list to hold merged data
-        val tempTransactionList = mutableListOf<Expense>()
-        var totalIncome = 0.0
-        var totalExpense = 0.0
+        db.collection("expenses")
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { expenseResult ->
+                val tempTransactionList = mutableListOf<Expense>()
+                var totalExpense = 0.0
 
-        // Fetch Expenses
-        db.collection("expenses").whereEqualTo("userId", userId).get().addOnSuccessListener { expenseDocs ->
-            for (doc in expenseDocs) {
-                val item = doc.toObject(Expense::class.java)
-                item.expenseId = doc.id
+                for (document in expenseResult) {
+                    val expense = document.toObject(Expense::class.java)
+                    if (expense.expenseId.isEmpty()) expense.expenseId = document.id
 
-                val fixedItem = item.copy(type = "expense")
-                tempTransactionList.add(fixedItem)
-                totalExpense += fixedItem.amount
-            }
-
-            // Fetch Income
-            db.collection("income").whereEqualTo("userId", userId).get().addOnSuccessListener { incomeDocs ->
-                for (doc in incomeDocs) {
-                    val source = doc.getString("source") ?: "Income"
-                    val item = doc.toObject(Expense::class.java)
-
-                    item.expenseId = doc.id
-
-                    val fixedItem = item.copy(type = "income", category = source)
-                    tempTransactionList.add(fixedItem)
-                    totalIncome += fixedItem.amount
+                    tempTransactionList.add(expense)
+                    totalExpense += expense.amount
                 }
 
-                // Sort by date descending (newest first)
                 tempTransactionList.sortByDescending { it.date }
 
-                // Update the Main List used by the Adapter
                 expenseList.clear()
                 expenseList.addAll(tempTransactionList.take(5))
                 adapter.notifyDataSetChanged()
 
-                // Update Total Balance UI (Income - Expense)
-                val balance = totalIncome - totalExpense
                 val format = NumberFormat.getCurrencyInstance(Locale("en", "PH"))
-                tvTotalExpense.text = format.format(balance)
+                tvTotalExpense.text = format.format(totalExpense)
+
+            }.addOnFailureListener {
+                tvTotalExpense.text = "Error"
             }
-        }.addOnFailureListener {
-            tvTotalExpense.text = "Error"
-            tvTotalExpense.text = "Error"
-        }
     }
 
-    // Function for the small prompt
     private fun showAddOptionsDialog() {
-        val options = arrayOf("Add Expense", "Add Income")
-
+        val options = arrayOf("Add Expense", "Add Income", "Scan QR or Receipt")
         val builder = androidx.appcompat.app.AlertDialog.Builder(this)
         builder.setTitle("What do you want to add?")
         builder.setItems(options) { dialog, which ->
             when (which) {
-                0 -> {
-                    // User clicked "Add Expense"
-                    startActivity(Intent(this, AddExpenseActivity::class.java))
-                }
-                1 -> {
-                    // User clicked "Add Income"
-                    startActivity(Intent(this, AddIncomeActivity::class.java))
-                }
+                0 -> startActivity(Intent(this, AddExpenseActivity::class.java))
+                1 -> startActivity(Intent(this, AddIncomeActivity::class.java))
+                2 -> startActivity(Intent(this, ScanActivity::class.java))
             }
         }
         builder.show()
