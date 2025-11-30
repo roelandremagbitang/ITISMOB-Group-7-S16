@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // REQUIRED: This connects your JSON file to the app
     id("com.google.gms.google-services")
 }
 
@@ -42,7 +41,6 @@ android {
 }
 
 dependencies {
-    // Existing default libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,20 +54,28 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation("com.google.android.material:material:1.12.0")
 
-    // 🔒 FIREBASE AUTH (Factor 1)
-    // We use strings ("") here to avoid the "Unresolved reference" error
+    // FIREBASE
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
-
-    // 👤 BIOMETRIC API (Factor 2 - Facial Recognition)
-    implementation("androidx.biometric:biometric:1.1.0")
-
-    // 🛠️ FIXED: Changed from 'libs.firebase...' to direct string to fix the error
     implementation("com.google.firebase:firebase-common-ktx:20.4.2")
 
-    // For the graph
+    // BIOMETRIC
+    implementation("androidx.biometric:biometric:1.1.0")
+
+    // CHARTS
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // --- CAMERA & SCANNING ---
+    val cameraxVersion = "1.3.0"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    // ML KIT
+    implementation("com.google.mlkit:text-recognition:16.0.0") // Receipt
+    implementation("com.google.mlkit:barcode-scanning:17.2.0") // QR Code
 
     // Testing
     testImplementation(libs.junit)

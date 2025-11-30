@@ -11,7 +11,6 @@ import java.util.*
 
 class AddExpenseActivity : AppCompatActivity() {
 
-    // Firebase
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -22,7 +21,6 @@ class AddExpenseActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
     private lateinit var btnCancel: Button
 
-    // Data
     private var selectedDateTimestamp: Long = System.currentTimeMillis()
     private val categoryList = mutableListOf("Food", "Transport", "Utilities", "Entertainment", "Others")
     private lateinit var categoryAdapter: ArrayAdapter<String>
@@ -38,67 +36,64 @@ class AddExpenseActivity : AppCompatActivity() {
         btnSave = findViewById(R.id.btnSaveExpense)
         btnCancel = findViewById(R.id.btnCancelExpense)
 
-        // Setup Spinner
-        categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categoryList)
+        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+        etDate.setText(sdf.format(Date(selectedDateTimestamp)))
+
+        etDate.setOnClickListener { showDatePicker() }
+
+        categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoryList)
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCategory.adapter = categoryAdapter
 
-        loadCategoriesFromFirebase()
-
-        // Setup Date Picker
-        val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
-        etDate.setText(sdf.format(Date())) // Set today as default
-
-        etDate.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            DatePickerDialog(
-                this,
-                { _, year, month, day ->
-                    calendar.set(year, month, day)
-                    selectedDateTimestamp = calendar.timeInMillis
-                    etDate.setText(sdf.format(calendar.time))
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
+        // --- CHECK FOR SCANNER DATA ---
+        if (intent.hasExtra("AMOUNT_FROM_SCAN")) {
+            val scannedAmount = intent.getDoubleExtra("AMOUNT_FROM_SCAN", 0.0)
+            if (scannedAmount > 0) etAmount.setText(scannedAmount.toString())
         }
+        if (intent.hasExtra("NOTES_FROM_SCAN")) {
+            val scannedNotes = intent.getStringExtra("NOTES_FROM_SCAN")
+            etNotes.setText(scannedNotes)
+        }
+        if (intent.hasExtra("CATEGORY_FROM_SCAN")) {
+            val scannedCat = intent.getStringExtra("CATEGORY_FROM_SCAN")
+            // Try to match the category string to the spinner items
+            val position = categoryList.indexOfFirst { it.equals(scannedCat, ignoreCase = true) }
+            if (position >= 0) {
+                spinnerCategory.setSelection(position)
+            }
+        }
+        // ------------------------------
 
         btnSave.setOnClickListener { saveExpense() }
         btnCancel.setOnClickListener { finish() }
     }
 
-    private fun loadCategoriesFromFirebase() {
-        val userId = auth.currentUser?.uid ?: return
-
-        db.collection("users").document(userId).collection("categories").get().addOnSuccessListener { result ->
-            if (!result.isEmpty) {
-                val customCategories = result.mapNotNull { it.getString("name") }
-                if (customCategories.isNotEmpty()) {
-                    categoryList.clear()
-                    categoryList.addAll(customCategories)
-                    // Ensure we always have a fallback if user deleted all categories
-                    if (categoryList.isEmpty()) categoryList.add("Uncategorized")
-                    categoryAdapter.notifyDataSetChanged()
-                }
-            }
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+            calendar.set(year, month, day)
+            selectedDateTimestamp = calendar.timeInMillis
+            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+            etDate.setText(sdf.format(calendar.time))
         }
+
+        DatePickerDialog(
+            this, dateSetListener,
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     private fun saveExpense() {
-        // Debug Toast
-        Toast.makeText(this, "Saving...", Toast.LENGTH_SHORT).show()
-
         val amountStr = etAmount.text.toString().trim()
         val notes = etNotes.text.toString().trim()
-
-        // Safe check for spinner selection
         val category = spinnerCategory.selectedItem?.toString() ?: "Uncategorized"
 
         if (amountStr.isEmpty()) {
             etAmount.error = "Amount is required"
             return
         }
-
         val amount = amountStr.toDoubleOrNull()
         if (amount == null) {
             etAmount.error = "Invalid amount"
@@ -120,10 +115,9 @@ class AddExpenseActivity : AppCompatActivity() {
             "expenseId" to ""
         )
 
-        // Save to Firestore
         db.collection("expenses").add(expenseData).addOnSuccessListener { documentReference ->
             documentReference.update("expenseId", documentReference.id)
-            Toast.makeText(this, "Expense Saved Successfully!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Expense Saved!", Toast.LENGTH_LONG).show()
             finish()
         }.addOnFailureListener { e ->
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
