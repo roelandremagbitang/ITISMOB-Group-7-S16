@@ -38,6 +38,7 @@ class SavingsChallengeDetailActivity : AppCompatActivity() {
     private lateinit var btnWithdraw: Button
     private lateinit var btnEdit: Button
     private lateinit var btnDelete: Button
+    private var isChallengeCompleted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,10 +88,13 @@ class SavingsChallengeDetailActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         rvTransactions.layoutManager = LinearLayoutManager(this)
-        // Pass the click listener here to edit existing transactions
         transactionAdapter = SavingsTransactionAdapter(transactionList) { selectedTransaction ->
-            val isDeposit = selectedTransaction.type == "deposit"
-            showTransactionDialog(isDeposit, selectedTransaction)
+            if (!isChallengeCompleted) {
+                val isDeposit = selectedTransaction.type == "deposit"
+                showTransactionDialog(isDeposit, selectedTransaction)
+            } else {
+                Toast.makeText(this, "Challenge complete. History is locked.", Toast.LENGTH_SHORT).show()
+            }
         }
         rvTransactions.adapter = transactionAdapter
     }
@@ -155,16 +159,15 @@ class SavingsChallengeDetailActivity : AppCompatActivity() {
         progressBar.progress = percentage.coerceIn(0, 100)
         tvPercent.text = "$percentage%"
 
-        val isCompleted = currentAmount >= goalAmount
-        if (isCompleted) {
+        isChallengeCompleted = currentAmount >= goalAmount
+        if (isChallengeCompleted) {
             tvPercent.setTextColor("#4CAF50".toColorInt())
 
-            // DISABLE ACTIONS
+            // Disable Action Buttons
             btnDeposit.isEnabled = false
             btnWithdraw.isEnabled = false
             btnEdit.isEnabled = false
 
-            // Visual feedback
             btnDeposit.alpha = 0.5f
             btnWithdraw.alpha = 0.5f
             btnEdit.alpha = 0.5f
@@ -172,7 +175,7 @@ class SavingsChallengeDetailActivity : AppCompatActivity() {
         } else {
             tvPercent.setTextColor("#6C63FF".toColorInt())
 
-            // ENABLE ACTIONS (for debugging purposes)
+            // Enable Action Buttons
             btnDeposit.isEnabled = true
             btnWithdraw.isEnabled = true
             btnEdit.isEnabled = true
@@ -181,7 +184,6 @@ class SavingsChallengeDetailActivity : AppCompatActivity() {
             btnWithdraw.alpha = 1.0f
             btnEdit.alpha = 1.0f
         }
-
         btnDelete.isEnabled = true
     }
 

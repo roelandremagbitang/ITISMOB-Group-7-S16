@@ -17,7 +17,6 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class DashboardActivity : AppCompatActivity() {
-
     private lateinit var tvTotalExpense: TextView
     private lateinit var rvRecentTransactions: RecyclerView
     private val db = Firebase.firestore
@@ -128,7 +127,6 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    // Function for the small prompt
     private fun showAddOptionsDialog() {
         val options = arrayOf("Add Expense", "Add Income")
 
