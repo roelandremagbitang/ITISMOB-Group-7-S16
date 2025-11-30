@@ -45,24 +45,35 @@ class AddExpenseActivity : AppCompatActivity() {
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCategory.adapter = categoryAdapter
 
-        // --- CHECK FOR SCANNER DATA ---
-        if (intent.hasExtra("AMOUNT_FROM_SCAN")) {
-            val scannedAmount = intent.getDoubleExtra("AMOUNT_FROM_SCAN", 0.0)
-            if (scannedAmount > 0) etAmount.setText(scannedAmount.toString())
-        }
-        if (intent.hasExtra("NOTES_FROM_SCAN")) {
-            val scannedNotes = intent.getStringExtra("NOTES_FROM_SCAN")
-            etNotes.setText(scannedNotes)
-        }
-        if (intent.hasExtra("CATEGORY_FROM_SCAN")) {
-            val scannedCat = intent.getStringExtra("CATEGORY_FROM_SCAN")
-            // Try to match the category string to the spinner items
-            val position = categoryList.indexOfFirst { it.equals(scannedCat, ignoreCase = true) }
+        // --- CHECK FOR SCANNER OR BUDGET DATA ---
+        val categoryFromBudget = intent.getStringExtra("CATEGORY_FROM_BUDGET")
+        if (categoryFromBudget != null) {
+            if (!categoryList.any { it.equals(categoryFromBudget, ignoreCase = true) }) {
+                categoryList.add(0, categoryFromBudget) // Add to the top of the list
+                categoryAdapter.notifyDataSetChanged()
+            }
+            val position = categoryList.indexOfFirst { it.equals(categoryFromBudget, ignoreCase = true) }
             if (position >= 0) {
                 spinnerCategory.setSelection(position)
             }
+        } else {
+            if (intent.hasExtra("AMOUNT_FROM_SCAN")) {
+                val scannedAmount = intent.getDoubleExtra("AMOUNT_FROM_SCAN", 0.0)
+                if (scannedAmount > 0) etAmount.setText(scannedAmount.toString())
+            }
+            if (intent.hasExtra("NOTES_FROM_SCAN")) {
+                val scannedNotes = intent.getStringExtra("NOTES_FROM_SCAN")
+                etNotes.setText(scannedNotes)
+            }
+            if (intent.hasExtra("CATEGORY_FROM_SCAN")) {
+                val scannedCat = intent.getStringExtra("CATEGORY_FROM_SCAN")
+                val position = categoryList.indexOfFirst { it.equals(scannedCat, ignoreCase = true) }
+                if (position >= 0) {
+                    spinnerCategory.setSelection(position)
+                }
+            }
         }
-        // ------------------------------
+        // -------------------------------------
 
         btnSave.setOnClickListener { saveExpense() }
         btnCancel.setOnClickListener { finish() }
