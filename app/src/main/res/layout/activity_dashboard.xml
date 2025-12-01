@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="#6C63FF"
+                app:cardBackgroundColor="@color/purple_main"
                 app:cardElevation="8dp">
 
                 <LinearLayout
@@ -100,6 +100,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        app:backgroundTint="@color/purple_dark"
         app:fabCradleMargin="10dp"
         app:fabCradleRoundedCornerRadius="10dp"
         app:fabCradleVerticalOffset="10dp">
@@ -108,7 +109,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="2">
+            android.weightSum="2">
 
             <ImageButton
                 android:id="@+id/btnGraphs"
@@ -138,7 +139,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add"
         app:layout_anchor="@id/bottomAppBar"
-        app:backgroundTint="#6C63FF"
+        app:backgroundTint="@color/purple_main"
         app:tint="#FFFFFF"
         android:contentDescription="Add Expense"/>
 

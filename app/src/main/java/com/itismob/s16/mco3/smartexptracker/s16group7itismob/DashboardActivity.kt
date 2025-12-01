@@ -94,7 +94,7 @@ class DashboardActivity : AppCompatActivity() {
                                 if (!fsName.isNullOrEmpty()) {
                                     tvGreeting.text = "Hello, $fsName!"
                                 } else {
-                                    tvGreeting.text = "Hello, User!"
+                                    tvGreeting.text = "Hello, $fsName!"
                                 }
                             }
                     }

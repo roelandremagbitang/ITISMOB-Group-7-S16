@@ -32,6 +32,6 @@
     <string name="custom_categories">Custom Categories</string>
     <string-array name="period_options"><item>Weekly</item><item>Monthly</item><item>Yearly</item></string-array>
     <string name="savings_challenge">Savings Challenge</string>
-    <string name="budget_tracker">Budget Tracker</string>
+    <string name="budget_tracker">Budget Builder</string>
     <string name="cancel_changes">Cancel Changes</string>
 </resources>
